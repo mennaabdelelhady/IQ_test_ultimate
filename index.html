@@ -1,0 +1,7375 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IQ Quiz Quest</title>
+<style>
+:root{--bg:#fff8ec;--card:#fff;--fg:#2b1b4a;--mu:#6b5b8a;--bd:#e3d6f5;--ok:#0f9d58;--no:#e53935;--h:265}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1530;--card:#2a2045;--fg:#fff;--mu:#c9b8ee;--bd:#4a3b78;--ok:#4ade80;--no:#ff6b6b}}
+*{box-sizing:border-box}
+body{margin:0;font:18px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(90deg,hsl(var(--h) 85% 55%),hsl(calc(var(--h) + 50) 85% 55%));color:#fff;box-shadow:0 3px 10px #0003}
+.bar{max-width:640px;margin:0 auto;padding:8px 12px;display:flex;gap:6px;align-items:center}
+.bar .t{flex:1;text-align:center;font-weight:800;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar button{background:#ffffff33;border-color:#ffffff66;color:#fff;box-shadow:none;padding:8px 12px}
+main,#drawer{max-width:640px;margin:0 auto;padding:12px 16px}
+#drawer{max-height:65vh;overflow:auto;background:var(--bg);color:var(--fg)}
+h1{font-size:1.6rem;margin:8px 0 4px;font-weight:900}p{margin:8px 0}.mu{color:var(--mu);font-size:.9rem}
+button{font:inherit;font-weight:700;color:var(--fg);background:var(--card);border:3px solid var(--bd);border-radius:16px;padding:12px 16px;cursor:pointer;min-height:48px;box-shadow:0 4px 0 var(--bd);transition:transform .1s}
+button:active:not(:disabled){transform:translateY(3px);box-shadow:none}
+button:disabled{opacity:.45;cursor:default}
+.pri{background:hsl(var(--h) 85% 55%);border-color:hsl(var(--h) 85% 40%);color:#fff;box-shadow:0 4px 0 hsl(var(--h) 85% 35%)}
+.row{display:flex;gap:12px;margin:12px 0;flex-wrap:wrap}.row>*{flex:1}
+.big{min-height:64px;font-size:1.2rem}
+.list button{display:flex;width:100%;justify-content:space-between;margin:8px 0;text-align:left}
+.cur{border-color:hsl(var(--h) 85% 55%)}
+.card{background:var(--card);border:3px solid var(--bd);border-radius:18px;padding:16px;margin:12px 0}
+.center{text-align:center}
+.ans{font-weight:700;margin-top:10px}
+.opt{display:block;width:100%;text-align:left;margin:10px 0;min-height:62px;border-color:hsl(var(--c) 80% 60%);box-shadow:0 4px 0 hsl(var(--c) 80% 60%)}
+.opt:nth-child(4n+1){--c:350}.opt:nth-child(4n+2){--c:200}.opt:nth-child(4n+3){--c:140}.opt:nth-child(4n){--c:35}
+.opt:disabled{opacity:1}
+.opt.good{background:var(--ok);border-color:var(--ok);color:#fff}.opt.bad{background:var(--no);border-color:var(--no);color:#fff}
+.fb{border-radius:18px;padding:12px 16px;margin:12px 0;border:3px solid}
+.fb h2{margin:0;font-size:1.5rem}
+.fb.ok{background:#0f9d5826;border-color:var(--ok)}.fb.no{background:#e5393526;border-color:var(--no)}
+.fresh.ok{animation:pop .5s}.fresh.no{animation:shake .5s}
+.slide{animation:slide .3s}
+.qn{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.qn button{min-width:46px;min-height:46px;padding:0;box-shadow:none}
+.qn .cur{outline:3px solid hsl(var(--h) 85% 55%);outline-offset:1px}
+.qn .good{background:var(--ok);border-color:var(--ok);color:#fff}.qn .bad{background:var(--no);border-color:var(--no);color:#fff}
+.stars{font-size:2.6rem;letter-spacing:6px;color:#f5b301}.star{display:inline-block;animation:pop .6s both}
+.score{font-size:2.4rem;font-weight:900}
+details{margin:8px 0;font-size:.9rem}summary{cursor:pointer;font-weight:700}details ul{max-height:200px;overflow:auto;padding-left:20px}
+@keyframes pop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+@keyframes slide{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+</style></head>
+<body>
+<header><div class="bar" id="bar"></div><nav id="drawer" class="list" hidden></nav></header>
+<main id="app"></main>
+<script>
+/* ================= HOW TO ADD QUESTIONS =================
+   ITEMS is an array with one object per question/answer pair:
+     { chapter: "Test One",       // required: chapter title. Chapters appear in the order they first show up here.
+       question: "…",             // required: the question, in the book's wording
+       answer: "…",               // required: the book's correct answer, exactly as printed
+       options: ["…","…","…"],    // optional: WRONG choices, also taken from the book. If omitted, the app uses other answers from the array.
+       explanation: "…",          // optional: the book's explanation, shown after answering
+       id: "T1-3" }               // optional: unique id (defaults to chapter + question). Keep ids stable: saved progress is matched by id.
+   >>> PASTE YOUR PAIRS BETWEEN THE MARKERS BELOW <<< */
+const ITEMS = /*ITEMS_START*/[
+{
+"id": "T1-3",
+"chapter": "Test One",
+"question": "0, 1, 2, 4, 6, 9, 12, 16, ? What number should replace the question mark?",
+"answer": "20",
+"explanation": "add 1, 1, 2, 2, 3, 3, 4, 4",
+"options": [
+"25",
+"27",
+"11"
+]
+},
+{
+"id": "T1-4",
+"chapter": "Test One",
+"question": "Which number is the odd one out? 9678 4572 5261 5133 3527 6895 7768",
+"answer": "3527",
+"explanation": "in the others the sum of the first two numbers is equal to the sum of the second two numbers, for example 5 + 2 = 6 + 1",
+"options": [
+"3649",
+"3645",
+"6394"
+]
+},
+{
+"id": "T1-5",
+"chapter": "Test One",
+"question": "Isotherm is to temperature as isobar is to: atmosphere, wind, pressure, latitude, current",
+"answer": "pressure",
+"explanation": "",
+"options": [
+"February",
+"intricate",
+"beauty"
+]
+},
+{
+"id": "T1-11",
+"chapter": "Test One",
+"question": "How many minutes is it before 12 noon, if 48 minutes ago it was twice as many minutes past 9 am?",
+"answer": "44 minutes",
+"explanation": "12 noon less 44 minutes = 11.16, 11.16 less 48 minutes = 10.28, 9 am plus 88 minutes (44 × 2) = 10.28",
+"options": [
+"37 minutes",
+"41 minutes",
+"22 minutes"
+]
+},
+{
+"id": "T1-13",
+"chapter": "Test One",
+"question": "Which is the odd one out? heptagon, triangle, hexagon, cube, pentagon",
+"answer": "cube",
+"explanation": "it is a three-dimensional figure. The rest are all two-dimensional figures",
+"options": [
+"heptagon",
+"triangle",
+"hexagon"
+]
+},
+{
+"id": "T1-16",
+"chapter": "Test One",
+"question": "Which word in brackets is closest in meaning to the word in capitals? BRUNT (dull, edifice, impact, tawny, nonsense)",
+"answer": "impact",
+"explanation": "",
+"options": [
+"dull",
+"edifice",
+"tawny"
+]
+},
+{
+"id": "T1-17",
+"chapter": "Test One",
+"question": "Which of the following is not an anagram of a type of food? PAST EIGHT I CAN ROAM WIN BOAR CAN PEAK COOL CHEAT",
+"answer": "WIN BOAR = rainbow",
+"explanation": "The foods are spaghetti (PAST EIGHT), macaroni (I CAN ROAM), pancake (CAN PEAK) and chocolate (COOL CHEAT)",
+"options": [
+"tiny magical alarm",
+"lee crock = cockerel",
+"BE TASK = basket"
+]
+},
+{
+"id": "T1-22",
+"chapter": "Test One",
+"question": "6 7/8 , 29/16 , 55/8 , 33/16, 43/8 , ? What number should replace the question mark?",
+"answer": "51/16",
+"explanation": "there are two alternate sequences: –1¼ and +1¼",
+"options": [
+"13¼",
+"£54.00",
+"+12"
+]
+},
+{
+"id": "T1-24",
+"chapter": "Test One",
+"question": "10, 30, 32, 96, 98, 294, 296, ?, ? What two numbers should replace the question marks?",
+"answer": "888, 890",
+"explanation": "the sequence progresses ×3, +2",
+"options": [
+"150, 157",
+"30, 26",
+"Y, Z"
+]
+},
+{
+"id": "T1-26",
+"chapter": "Test One",
+"question": "Identify two words (one from each set of brackets) that have a connection (analogy) with the words in capitals and relate to them in the same way. SEA (wet, swimmer, ship) SNOW (mountain, ice, skier)",
+"answer": "swimmer, skier",
+"explanation": "",
+"options": [
+"second, last",
+"venture, introduce",
+"ear, brain"
+]
+},
+{
+"id": "T1-27",
+"chapter": "Test One",
+"question": "Which word meaning LOCALITY becomes a word meaning TEMPO when a letter is removed?",
+"answer": "place/pace",
+"explanation": "",
+"options": [
+"cleverness",
+"consequence",
+"elemental"
+]
+},
+{
+"id": "T1-28",
+"chapter": "Test One",
+"question": "Alf has four times as many as Jim, and Jim has three times as many as Sid. Altogether they have 192. How many has each?",
+"answer": "Alf 144, Jim 36, Sid 12",
+"explanation": "",
+"options": [
+"Jill 30, Peter 40, Kate 50",
+"reduce, cereal, allure",
+"SPINACH, CARROT, POTATO"
+]
+},
+{
+"id": "T1-29",
+"chapter": "Test One",
+"question": "Which is the only one of the following that is not an anagram of a word meaning out of this world? flow under sexed Utah enviable blue icier blend",
+"answer": "sexed Utah = exhausted",
+"explanation": "The words meaning out of this world are: wonderful (flow under), unbelievable (enviable blue), incredible (icier blend)",
+"options": [
+"the Arctic = architect",
+"lee crock = cockerel",
+"bridge; the others are"
+]
+},
+{
+"id": "T1-32",
+"chapter": "Test One",
+"question": "How many minutes is it before 12 noon if nine minutes ago it was twice as many minutes past 10 am?",
+"answer": "37 minutes",
+"explanation": "12 noon less 37 minutes = 11.23, 11.23 less nine minutes = 11.14. 10 am plus 74 minutes (2 × 37) = 11.14",
+"options": [
+"44 minutes",
+"50 minutes",
+"22 minutes"
+]
+},
+{
+"id": "T1-33",
+"chapter": "Test One",
+"question": "Which two words are closest in meaning? conclave, medley, theme, conglomeration, dissertation, augury",
+"answer": "medley, conglomeration",
+"explanation": "",
+"options": [
+"vestigial, rudimentary",
+"salubrious, healthy",
+"practicable, feasible"
+]
+},
+{
+"id": "T2-2",
+"chapter": "Test Two",
+"question": "Which four-letter word, when placed in the brackets, will complete a word on the left and start another word on the right? RAM (****) RIDGE",
+"answer": "PART",
+"explanation": "RAMPART and PARTRIDGE",
+"options": [
+"BELL",
+"WIND",
+"HAMPER"
+]
+},
+{
+"id": "T2-4",
+"chapter": "Test Two",
+"question": "ligno- is to wood as vitro- is to wool, glass, stone, water, paper?",
+"answer": "glass",
+"explanation": "",
+"options": [
+"tyro",
+"rear",
+"Billy"
+]
+},
+{
+"id": "T2-8",
+"chapter": "Test Two",
+"question": "0, 4, 2, 6, 3, 7, 3.5, ? What number should replace the question mark?",
+"answer": "7.5",
+"explanation": "the sequence proceeds +4, ÷2, +4, etc",
+"options": [
+"9",
+"11",
+"9.25"
+]
+},
+{
+"id": "T2-9",
+"chapter": "Test Two",
+"question": "Identify two words (one from each set of brackets) that have a connection (analogy) with the words in capitals and relate to them in the same way. LONGITUDE (degree, tropics, meridian) LATITUDE (parallel, line, equinox)",
+"answer": "meridian, parallel",
+"explanation": "",
+"options": [
+"venture, introduce",
+"swimmer, skier",
+"second, last"
+]
+},
+{
+"id": "T2-15",
+"chapter": "Test Two",
+"question": "The following clue leads to which pair of rhyming words? measure bulk of grass fodder",
+"answer": "weigh hay",
+"explanation": "",
+"options": [
+"pull wool",
+"new clue",
+"Vatrac (cravat)"
+]
+},
+{
+"id": "T2-17",
+"chapter": "Test Two",
+"question": "Which is the odd one out? femur, mandible, fibula, tibia, patella",
+"answer": "mandible",
+"explanation": "it is the jaw bone, the rest are bones in the leg",
+"options": [
+"femur",
+"fibula",
+"tibia"
+]
+},
+{
+"id": "T2-18",
+"chapter": "Test Two",
+"question": "My watch was correct at noon, after which it started to lose 17 minutes per hour until six hours ago it stopped completely. It now shows the time as 2.52 pm. What time is it now?",
+"answer": "10 pm",
+"explanation": "12 noon = 12 noon, 1 pm = 12.43, 2 pm = 1.26, 3 pm = 2.09, 4 pm = 2.52, +6 hours = 10 pm",
+"options": [
+"9 pm",
+"4 mph",
+"48 mph"
+]
+},
+{
+"id": "T2-19",
+"chapter": "Test Two",
+"question": "I Insert all the letters of the phrase UNSPOILT LOCAL into the remaining blank spaces once each only, to produce two words that form a phrase. Clue: things are not always what they appear.",
+"answer": "OPTICAL ILLUSION",
+"explanation": "",
+"options": [
+"identical twins",
+"conducted tour",
+"PEACH, OLIVE, COCONUT"
+]
+},
+{
+"id": "T2-23",
+"chapter": "Test Two",
+"question": "1, 101, 15, 4, 29, –93, 43, –190, ? What number should replace the question mark?",
+"answer": "57",
+"explanation": "there are two alternate sequences: +14, –97",
+"options": [
+"65",
+"72.5",
+"86"
+]
+},
+{
+"id": "T2-25",
+"chapter": "Test Two",
+"question": "15, 5, 8, 24, 21, 7, 10, 30, ?, ?, ?, 36, 33 What three numbers are missing?",
+"answer": "27, 9, 12",
+"explanation": "the sequence progresses ÷3, +3, ×3, –3 repeated",
+"options": [
+"19, 21, 24",
+"week, day, year",
+"reduce, cereal, allure"
+]
+},
+{
+"id": "T2-30",
+"chapter": "Test Two",
+"question": "Which word in brackets is closest in meaning to the word in capitals? FUSE (muzzle, explode, coalesce, immobilize, tighten)",
+"answer": "coalesce",
+"explanation": "",
+"options": [
+"muzzle",
+"explode",
+"immobilize"
+]
+},
+{
+"id": "T2-33",
+"chapter": "Test Two",
+"question": "You have 59 cubic blocks. What is the minimum number that needs to be taken away in order to construct a solid cube with none left over?",
+"answer": "32",
+"explanation": "the next cube number below 64 (4 × 4 × 4) is 27 (3 × 3 × 3). In order to construct a solid cube, therefore, with none left over, 59 – 27 = 32 blocks need to be taken away",
+"options": [
+"47",
+"25",
+"20"
+]
+},
+{
+"id": "T2-34",
+"chapter": "Test Two",
+"question": "What word meaning DEDUCE becomes a word meaning PROPEL when a letter is removed?",
+"answer": "DERIVE/DRIVE",
+"explanation": "",
+"options": [
+"PARAGRAPHS",
+"SKYSCR(APE)R",
+"EVIDENTIAL"
+]
+},
+{
+"id": "T3-2",
+"chapter": "Test Three",
+"question": "Which is the odd one out? cymbal, marimba, vibraphone, trombone, glockenspiel",
+"answer": "trombone",
+"explanation": "the rest are percussion instruments",
+"options": [
+"cymbal",
+"marimba",
+"vibraphone"
+]
+},
+{
+"id": "T3-4",
+"chapter": "Test Three",
+"question": "Which is the odd number out? 462 683 385 198 253 781 594",
+"answer": "683",
+"explanation": "in the other numbers add the first and last digits to arrive at the middle digit",
+"options": [
+"586",
+"730",
+"600"
+]
+},
+{
+"id": "T3-9",
+"chapter": "Test Three",
+"question": "1, 50, 6, 45, 11, 40, 16, 35, 21, ?, ? Which numbers should replace the question marks?",
+"answer": "30, 26",
+"explanation": "there are two alternate sequences. Add 5 starting at 1. Subtract 5 starting at 50",
+"options": [
+"888, 890",
+"150, 157",
+"Y, Z"
+]
+},
+{
+"id": "T3-13",
+"chapter": "Test Three",
+"question": "Solve the anagram in brackets to correctly complete the quotation with a 10letter word. ‘The difference between golf and (torn veg men) is that in golf you cannot improve your lie’ George Deukmejian",
+"answer": "government",
+"explanation": "",
+"options": [
+"contribution",
+"generalities",
+"sheldrake"
+]
+},
+{
+"id": "T3-18",
+"chapter": "Test Three",
+"question": "bizarre is to outlandish as eccentric is to: eerie, quirky, esoteric, weird, curious",
+"answer": "quirky",
+"explanation": "",
+"options": [
+"beauty",
+"premise",
+"circle"
+]
+},
+{
+"id": "T3-19",
+"chapter": "Test Three",
+"question": "On taking delivery of a consignment of eggs the market stall owner was furious to find that several were cracked. In fact, on counting them up in order to assess the damage he found that 72 were cracked, which was 12 per cent of the total consignment. How many eggs in total were in the consignment?",
+"answer": "600",
+"explanation": "72 ÷ 12 × 100",
+"options": [
+"683",
+"425",
+"586"
+]
+},
+{
+"id": "T3-21",
+"chapter": "Test Three",
+"question": "MTD is to PXB as FRJ is to?",
+"answer": "IVH",
+"explanation": "the first letter moves three places in the alphabet forwards: FghI; the second letter moves four letters in the alphabet forwards: RstuV; the third letter moves two places in the alphabet backwards: JiH",
+"options": [
+"MOP",
+"IRON",
+"JLM"
+]
+},
+{
+"id": "T3-25",
+"chapter": "Test Three",
+"question": "16, 23, 19, 19, 22, 15, 25, ? What number should replace the question mark?",
+"answer": "11",
+"explanation": "there are two alternate sequences: +3 and –4",
+"options": [
+"12.25",
+"9",
+"7.5"
+]
+},
+{
+"id": "T3-26",
+"chapter": "Test Three",
+"question": "Simplify: 14 56 ÷ 55 77 as the lowest fraction.",
+"answer": "14 77 1 7 7 × = × = 55 56 5 4 20",
+"explanation": "",
+"options": [
+"4 6 1 3 5 2 or 2 5 3 1 6 4",
+"two sides to every story; 8",
+"27 37 6 3 6 18 9 × × = × = = 74 9 17 2 17 34 17"
+]
+},
+{
+"id": "T3-29",
+"chapter": "Test Three",
+"question": "The cost of an identical three-course lunch for four people was £56.00. The main course cost twice as much as the sweet and the sweet cost twice as much as the starter. How much did the main course cost per person?",
+"answer": "£8.00 per person",
+"explanation": "starter = 1 unit, sweet = 2 units, main course = 4 units, = 7 units in total. Therefore, cost per unit = £56 ÷ 7 = £8.00. The main course, therefore, cost 4 × 8 = 32 (or £8.00 per person)",
+"options": [
+"147/81 (× 11/3)",
+"Jack 10 and Jill 5",
+"652 = 162 + 632"
+]
+},
+{
+"id": "T3-30",
+"chapter": "Test Three",
+"question": "aplomb, dodge, graph, jerk, ? What comes next? laugh, maroon, link, nickel, midnight",
+"answer": "maroon",
+"explanation": "the letters start and finish with the alphabetic sequence: ABcDEfGHiJKlMN",
+"options": [
+"elicit",
+"beetle",
+"astute"
+]
+},
+{
+"id": "T3-33",
+"chapter": "Test Three",
+"question": "OVATE GNOME is an anagram of which familiar phrase (3, 1, 4, 2)? Clue: make haste.",
+"answer": "GET A MOVE ON",
+"explanation": "",
+"options": [
+"ON CLOUD NINE",
+"FRAME OF MIND",
+"PULL TO PIECES"
+]
+},
+{
+"id": "T4-2",
+"chapter": "Test Four",
+"question": "100, 97.4, 94.8, ?, 89.6, 87 What number should replace the question mark?",
+"answer": "92.2",
+"explanation": "deduct 2.6 at each stage",
+"options": [
+"83",
+"86",
+"88"
+]
+},
+{
+"id": "T4-3",
+"chapter": "Test Four",
+"question": "E A D I P A Start at one of the four corner letters and spiral clockwise round the perimeter, finishing at the centre letter to spell out a nine-letter word. You must provide the missing letters.",
+"answer": "DISAPPEAR",
+"explanation": "",
+"options": [
+"EVIDENTIAL",
+"PANORAMIC",
+"SKYSCR(APE)R"
+]
+},
+{
+"id": "T4-4",
+"chapter": "Test Four",
+"question": "Which number is the odd one out? 9654 4832 5945 7642 7963 8216 3649",
+"answer": "3649",
+"explanation": "in all the others multiply the first two digits together to produce the number formed by the last two digits",
+"options": [
+"3527",
+"3645",
+"6394"
+]
+},
+{
+"id": "T4-5",
+"chapter": "Test Four",
+"question": "Which two words are closest in meaning? qualified, practicable, puissant, feasible, mundane, fine",
+"answer": "practicable, feasible",
+"explanation": "",
+"options": [
+"medley, conglomeration",
+"salubrious, healthy",
+"haughty, arrogant"
+]
+},
+{
+"id": "T4-6",
+"chapter": "Test Four",
+"question": "Identify two words (one from each set of brackets) that have a connection (analogy) with the words in capitals and relate to them in the same way. FIRST (second, next, last) PENULTIMATE (last, third, previous)",
+"answer": "second, last",
+"explanation": "",
+"options": [
+"ear, brain",
+"swimmer, skier",
+"chord, cord"
+]
+},
+{
+"id": "T4-13",
+"chapter": "Test Four",
+"question": "Which is the odd one out? trivet, tributary, triptych, trident, triad",
+"answer": "tributary",
+"explanation": "in the other words the prefix tri- refers to three",
+"options": [
+"trivet",
+"triptych",
+"trident"
+]
+},
+{
+"id": "T4-15",
+"chapter": "Test Four",
+"question": "5862 is to 714 and 3498 is to 1113 and 9516 is to 156 therefore 8257 is to ?",
+"answer": "157",
+"explanation": "7 + 8 = 15, 2 + 5 = 7",
+"options": [
+"92.2",
+"115",
+"131"
+]
+},
+{
+"id": "T4-17",
+"chapter": "Test Four",
+"question": "mohair is to wool as shantung is to: silk, cotton, linen, nylon, fabric",
+"answer": "silk",
+"explanation": "",
+"options": [
+"rear",
+"ear",
+"tree"
+]
+},
+{
+"id": "T4-18",
+"chapter": "Test Four",
+"question": "Place the numbers 1–6 into the circles, one number per circle, so that: the sum of the numbers 4 and 1, and all the numbers between them total 12; the sum of the numbers 4 and 6, and all the numbers between them total 21; the sum of the numbers 2 and 1, and all the numbers between them total 8.",
+"answer": "425136 or 631524",
+"explanation": "",
+"options": [
+"21534 or 43512",
+"50 per cent",
+"1792 steps (896 × 2)"
+]
+},
+{
+"id": "T4-19",
+"chapter": "Test Four",
+"question": "If meat in a river (3 in 6) is T(HAM)ES, can you find a monkey in a tall building (3 in 10)?",
+"answer": "SKYSCR(APE)R",
+"explanation": "",
+"options": [
+"DISAPPEAR",
+"DERIVE/DRIVE",
+"PARAGRAPHS"
+]
+},
+{
+"id": "T4-24",
+"chapter": "Test Four",
+"question": "Identify two words that sound alike but are spelled differently, which mean: a straight line connecting two points on a curve rope",
+"answer": "chord, cord",
+"explanation": "",
+"options": [
+"second, last",
+"schism, rift",
+"bilk, swindle"
+]
+},
+{
+"id": "T4-25",
+"chapter": "Test Four",
+"question": "Find the ages of Mary, George, Alice, Claire and Stephen if: Mary + George = 33 years between them Alice + Claire = 95 years between them Stephen + Mary = 72 years between them Mary + Claire = 87 years between them Stephen + George = 73 years between them",
+"answer": "Mary 16, George 17, Alice 24, Stephen 56, Claire 71",
+"explanation": "",
+"options": [
+"air, to give fair, hair, pair, chair and flair",
+"SEEK, SEED, FEED, FEND, FIND",
+"The most brilliantly dressed army will usually lose"
+]
+},
+{
+"id": "T4-28",
+"chapter": "Test Four",
+"question": "53 (3) 59 92 (4) 98 34 (2) 38 71 (?) 79 What number should replace the question mark?",
+"answer": "9",
+"explanation": "(7 × 9) ÷ (7 × 1)",
+"options": [
+"7.5",
+"11",
+"12.25"
+]
+},
+{
+"id": "T4-31",
+"chapter": "Test Four",
+"question": "abashed, derail, little, ? What comes next? mellow, entail, leader, elicit, status",
+"answer": "elicit",
+"explanation": "the following word begins with the last two letters of the previous word reversed",
+"options": [
+"hold",
+"maroon",
+"night"
+]
+},
+{
+"id": "T4-32",
+"chapter": "Test Four",
+"question": "Produce an eight-letter word by joining together two of these four-letter sets. cred, agon, lues, once, deva, some, come, pent",
+"answer": "pentagon",
+"explanation": "",
+"options": [
+"papillon",
+"filament",
+"hilltops"
+]
+},
+{
+"id": "T4-38",
+"chapter": "Test Four",
+"question": "What is one-third of one-quarter of one-fifth of one-half of 120?",
+"answer": "1",
+"explanation": "work backwards from 120; that is, 120 – 60 – 12 – 3 – 1",
+"options": [
+"2",
+"4",
+"7.5"
+]
+},
+{
+"id": "T5-3",
+"chapter": "Test Five",
+"question": "Identify two words (one from each set of brackets) that have a connection (analogy) with the words in capitals and relate to them in the same way. COCHLEA (shell, ear, brain) CEREBELLUM (heart, nose, brain)",
+"answer": "ear, brain",
+"explanation": "",
+"options": [
+"second, last",
+"swimmer, skier",
+"meridian, parallel"
+]
+},
+{
+"id": "T5-4",
+"chapter": "Test Five",
+"question": "Which number is the odd one out? 3647 2536 5869 6957 1425 4758",
+"answer": "6957",
+"explanation": "all the rest progress +3, –2, +3",
+"options": [
+"6394",
+"8612",
+"3527"
+]
+},
+{
+"id": "T5-7",
+"chapter": "Test Five",
+"question": "0, 1, 2, 5, 20, 25, ?, ? What two numbers should replace the question marks?",
+"answer": "150, 157",
+"explanation": "the sequence progresses +1, ×2, +3, ×4, +5, ×6, +7",
+"options": [
+"888, 890",
+"30, 26",
+"ear, brain"
+]
+},
+{
+"id": "T5-8",
+"chapter": "Test Five",
+"question": "Which is the odd one out? exacerbate, alleviate, amplify, escalate, inflate",
+"answer": "alleviate",
+"explanation": "it means to lessen, the rest meaning to increase",
+"options": [
+"exacerbate",
+"amplify",
+"escalate"
+]
+},
+{
+"id": "T5-14",
+"chapter": "Test Five",
+"question": "In eight years time the combined age of me and my two sons will be 124. What will it be in five years time?",
+"answer": "115",
+"explanation": "in eight years the combined age is 124; the age now is 124 – (8 × 3) = 100. Age in five years is 100 + (5 × 3) = 115",
+"options": [
+"82",
+"131",
+"92.2"
+]
+},
+{
+"id": "T5-15",
+"chapter": "Test Five",
+"question": "Which two words are closest in meaning? old, stiff, ripe, pure, uniform, mellow",
+"answer": "ripe, mellow",
+"explanation": "",
+"options": [
+"schism, rift",
+"haughty, arrogant",
+"flippancy, levity"
+]
+},
+{
+"id": "T5-17",
+"chapter": "Test Five",
+"question": "abyss is to chasm as fissure is to: crevice, recess, gorge, canyon, opening",
+"answer": "crevice",
+"explanation": "",
+"options": [
+"founder",
+"premise",
+"quirky"
+]
+},
+{
+"id": "T5-18",
+"chapter": "Test Five",
+"question": "Jack is twice as old as Jill, but in five years time he will only be one and a half times as old. How old are Jack and Jill now?",
+"answer": "Jack 10 and Jill 5",
+"explanation": "",
+"options": [
+"147/81 (× 11/3)",
+"£8.00 per person",
+"652 = 162 + 632"
+]
+},
+{
+"id": "T5-21",
+"chapter": "Test Five",
+"question": "1000, 865, ?, 595, 460, 325 What number should replace the question mark?",
+"answer": "730",
+"explanation": "deduct 135 each time",
+"options": [
+"586",
+"1212",
+"683"
+]
+},
+{
+"id": "T5-23",
+"chapter": "Test Five",
+"question": "Identify two words that sound alike, but are spelled differently, which mean: potency small insect",
+"answer": "might/mite",
+"explanation": "",
+"options": [
+"soul/sole",
+"rues/ruse",
+"chaste/chased"
+]
+},
+{
+"id": "T5-25",
+"chapter": "Test Five",
+"question": "What is the meaning of laconic? dull, uninspiring tearful using few words emotionally unstable sarcastic",
+"answer": "using few words",
+"explanation": "",
+"options": [
+"NO SLAM = salmon",
+"keen as mustard",
+"NFOLE = felon"
+]
+},
+{
+"id": "T5-27",
+"chapter": "Test Five",
+"question": "17, 4, 29, 13, 41, 22, 53, 31, ? What number should replace the question mark?",
+"answer": "65",
+"explanation": "there are two alternate sequences: +12 and +9",
+"options": [
+"81",
+"83",
+"47"
+]
+},
+{
+"id": "T5-32",
+"chapter": "Test Five",
+"question": "ENGLAND GOLF SCOTLAND TENNIS WALES Three teams, from England, Scotland and Wales, are competing for two trophies, one for golf and one for tennis. How many different outcomes of the two competitions exist? 6, 8, 9 or 12?",
+"answer": "9",
+"explanation": "the alternatives are: England win both golf and tennis, Scotland win both golf and tennis, Wales win both golf and tennis, England win golf, Scotland win tennis, Scotland win golf, England win tennis, England win golf, Wales win tennis, Wales win golf, England win tennis, Scotland win golf, Wales win tennis, Wales win golf, Scotland win tennis",
+"options": [
+"11",
+"7.5",
+"9.25"
+]
+},
+{
+"id": "T5-33",
+"chapter": "Test Five",
+"question": "Which is the odd one out? statement, fluster, retirement, restful, testament",
+"answer": "retirement",
+"explanation": "statement/testament and fluster/restful are anagram pairs",
+"options": [
+"statement",
+"fluster",
+"restful"
+]
+},
+{
+"id": "T5-39",
+"chapter": "Test Five",
+"question": "Which number is the odd one out? 3861 8712 5247 4356 1485 3645",
+"answer": "3645",
+"explanation": "in all the others the number formed by the first two digits added to the number formed by the second two digits equals 99",
+"options": [
+"3649",
+"3527",
+"6957"
+]
+},
+{
+"id": "T6-2",
+"chapter": "Test Six",
+"question": "1, 3, 4, 7, 11, 18, 29, ? What number should replace the question mark?",
+"answer": "47",
+"explanation": "each number is the sum of the previous two numbers, ie 18 + 29 = 47",
+"options": [
+"57",
+"45",
+"72.5"
+]
+},
+{
+"id": "T6-5",
+"chapter": "Test Six",
+"question": "blanch is to boil as sauté is to: simmer, fry, soak, roast, garnish",
+"answer": "fry",
+"explanation": "",
+"options": [
+"eat",
+"rear",
+"silk"
+]
+},
+{
+"id": "T6-6",
+"chapter": "Test Six",
+"question": "In a game of eight players lasting for 70 minutes, six substitutes alternate with each player. This means that all players, including the substitutes, are on the pitch for the same length of time. For how long?",
+"answer": "40 minutes",
+"explanation": "(70 × 8) ÷ 14. Total time for eight players = 70 × 8 = 560 minutes. However, as 14 people are each on the pitch for an equal length of time, they are each on the pitch for 40 minutes (560 ÷ 14)",
+"options": [
+"2 kilograms",
+"37 minutes",
+"40 days"
+]
+},
+{
+"id": "T6-7",
+"chapter": "Test Six",
+"question": "If 2 = H are BTO is two heads are better than one, what is the meaning of 2 = S to ES?",
+"answer": "two sides to every story; 8",
+"explanation": "C B D",
+"options": [
+"4 6 1 3 5 2 or 2 5 3 1 6 4",
+"14 77 1 7 7 × = × = 55 56 5 4 20",
+"Jack 10 and Jill 5"
+]
+},
+{
+"id": "T6-9",
+"chapter": "Test Six",
+"question": "Which is the odd one out? parabolic, lancet, abutment, trefoil, ogee",
+"answer": "abutment",
+"explanation": "it is part of a structure, the rest are specific types of arch",
+"options": [
+"parabolic",
+"lancet",
+"trefoil"
+]
+},
+{
+"id": "T6-15",
+"chapter": "Test Six",
+"question": "A O C I N A P Start at one of the four corner letters and spiral clockwise round the perimeter, finishing at the centre letter to spell out a nine-letter word. You must provide the missing letters.",
+"answer": "PANORAMIC",
+"explanation": "",
+"options": [
+"DISAPPEAR",
+"PARAGRAPHS",
+"EVIDENTIAL"
+]
+},
+{
+"id": "T6-18",
+"chapter": "Test Six",
+"question": "Which of the following is not an anagram of a type of building? delta arch raiment cleats the Arctic a blowgun",
+"answer": "the Arctic = architect",
+"explanation": "The buildings are: cathedral (delta arch), minaret (raiment), castle (cleats), bungalow (a blowgun)",
+"options": [
+"tiny magical alarm",
+"lee crock = cockerel",
+"bridge; the others are"
+]
+},
+{
+"id": "T6-19",
+"chapter": "Test Six",
+"question": "If five men can build a house in 16 days, how long will it take just two men to build the same house, assuming all men work at the same rate?",
+"answer": "40 days",
+"explanation": "five men take 5 × 16 = 80 man days to build the house. Two men will, therefore, take 40 days to build the house (80 ÷ 2)",
+"options": [
+"30 mph",
+"40 minutes",
+"237 yards"
+]
+},
+{
+"id": "T6-22",
+"chapter": "Test Six",
+"question": "Change one letter only in each word to produce a familiar phrase: cone do line",
+"answer": "come to life",
+"explanation": "",
+"options": [
+"act your age",
+"at the ready",
+"tit for tat"
+]
+},
+{
+"id": "T6-23",
+"chapter": "Test Six",
+"question": "IQS: LNV JRM: ? LOP, MOP, LIP, MOW or KIP?",
+"answer": "MOP",
+"explanation": "JklM – RqpO – MnoP",
+"options": [
+"IVH",
+"JLM",
+"BELL"
+]
+},
+{
+"id": "T6-24",
+"chapter": "Test Six",
+"question": "742 (8710) 138 395 (12167) 972 819 ( ? ) 356 What number should replace the question mark?",
+"answer": "11615",
+"explanation": "8 + 3 = 11; 1 + 5 = 6; 9 + 6 = 15",
+"options": [
+"8612",
+"4725",
+"6394"
+]
+},
+{
+"id": "T6-25",
+"chapter": "Test Six",
+"question": "FAIRER BEETLE is an anagram of which two words that are similar in meaning?",
+"answer": "FREE, LIBERATE",
+"explanation": "",
+"options": [
+"SCENT, AROMA",
+"SCARE, ALARM",
+"swimmer, skier"
+]
+},
+{
+"id": "T6-27",
+"chapter": "Test Six",
+"question": "Identify two words that sound alike but are spelled differently, which mean: regrets artifice",
+"answer": "rues/ruse",
+"explanation": "",
+"options": [
+"might/mite",
+"soul/sole",
+"chaste/chased"
+]
+},
+{
+"id": "T6-28",
+"chapter": "Test Six",
+"question": "Simplify: 27 9 6 ÷ × 74 37 17 to the lowest fraction.",
+"answer": "27 37 6 3 6 18 9 × × = × = = 74 9 17 2 17 34 17",
+"explanation": "",
+"options": [
+"14 77 1 7 7 × = × = 55 56 5 4 20",
+"two sides to every story; 8",
+"4 6 1 3 5 2 or 2 5 3 1 6 4"
+]
+},
+{
+"id": "T6-32",
+"chapter": "Test Six",
+"question": "night long boat house ? What comes next? calm, hold, panic, wind, post",
+"answer": "hold",
+"explanation": "to form compound words: nightlong, longboat, boathouse, household",
+"options": [
+"maroon",
+"Yoga",
+"cube"
+]
+},
+{
+"id": "T6-33",
+"chapter": "Test Six",
+"question": "rifle is to firearm as cutlass is to: blade, sword, weapon, steel, sever",
+"answer": "sword",
+"explanation": "",
+"options": [
+"fry",
+"tree",
+"quirky"
+]
+},
+{
+"id": "T6-37",
+"chapter": "Test Six",
+"question": "How much does a bag of flour weigh if it weighs 1 kilogram plus the weight of half the bag of flour?",
+"answer": "2 kilograms",
+"explanation": "half weight = 1 kg (+1 kg) = 2 kg",
+"options": [
+"40 minutes",
+"41 minutes",
+"22 minutes"
+]
+},
+{
+"id": "T6-38",
+"chapter": "Test Six",
+"question": "Fill in the missing letters to find two types of tree: *U*A*Y**** *A*D*L*O**",
+"answer": "EUCALYPTUS, SANDALWOOD",
+"explanation": "",
+"options": [
+"vestigial, rudimentary",
+"practicable, feasible",
+"medley, conglomeration"
+]
+},
+{
+"id": "T7-2",
+"chapter": "Test Seven",
+"question": "Which is the odd one out? banner, staff, pennant, streamer, oriflamme",
+"answer": "staff",
+"explanation": "it is a support for a flag. The rest are all types of flag",
+"options": [
+"banner",
+"pennant",
+"streamer"
+]
+},
+{
+"id": "T7-3",
+"chapter": "Test Seven",
+"question": "Peter, Paul and Mary share out a certain sum of money between them. Peter gets 2 /5, Paul gets 0.55 and Mary gets £45.00. How much is the original sum of money?",
+"answer": "£900",
+"explanation": "change everything to twentieths. So, 8/20 + 11/20 = 19/20. Therefore, £45.00 must be equal to 1/20 and the original sum of money must be 45 × 20 = 900",
+"options": [
+"£384",
+"£43.20",
+"TA101"
+]
+},
+{
+"id": "T7-5",
+"chapter": "Test Seven",
+"question": "Which word in brackets is closest in meaning to the word in capitals? INTRINSIC (precursory, interfering, obstinate, elemental, fascinating)",
+"answer": "elemental",
+"explanation": "",
+"options": [
+"precursory",
+"interfering",
+"obstinate"
+]
+},
+{
+"id": "T7-6",
+"chapter": "Test Seven",
+"question": "Place a four-letter word inside the brackets that will complete a word or phrase when tacked onto the word on the left, and will form another word or phrase when placed in front of the word on the right. HEAD (****) LASS",
+"answer": "WIND",
+"explanation": "HEADWIND and WINDLASS",
+"options": [
+"CROOK",
+"PART",
+"IRON"
+]
+},
+{
+"id": "T7-12",
+"chapter": "Test Seven",
+"question": "Identify two words (one from each set of brackets) that have a connection (analogy) with the words in capitals and relate to them in the same way. EMBARK (sail, venture, develop) INAUGURATE (speech, invent, introduce)",
+"answer": "venture, introduce",
+"explanation": "",
+"options": [
+"meridian, parallel",
+"swimmer, skier",
+"second, last"
+]
+},
+{
+"id": "T7-13",
+"chapter": "Test Seven",
+"question": "Which number is the odd one out? 571219 461016 831114 461016 971613 781523",
+"answer": "971613",
+"explanation": "numbers are obtained by adding pairs of digits, ie with 571219: 5 + 7 = 12; 7 + 12 = 19. To follow this same pattern 971613 would have to be 971623",
+"options": [
+"941319",
+"6471589",
+"85647"
+]
+},
+{
+"id": "T7-14",
+"chapter": "Test Seven",
+"question": "The following clue leads to which pair of rhyming words? yank yarn",
+"answer": "pull wool",
+"explanation": "",
+"options": [
+"weigh hay",
+"Vatrac (cravat)",
+"forest florist"
+]
+},
+{
+"id": "T7-16",
+"chapter": "Test Seven",
+"question": "100, 97.25, 91.75, 83.5, ? What number should replace the question mark?",
+"answer": "72.5",
+"explanation": "the amount deducted increases by 2.75 each time, ie 2.75, 5.5, 8.25, 11",
+"options": [
+"83",
+"86",
+"88"
+]
+},
+{
+"id": "T7-17",
+"chapter": "Test Seven",
+"question": "dentiform is to tooth as dendriform is to: triangle, tree, doughnut, arch, foot",
+"answer": "tree",
+"explanation": "",
+"options": [
+"tyro",
+"clog",
+"Billy"
+]
+},
+{
+"id": "T7-18",
+"chapter": "Test Seven",
+"question": "The average of three numbers is 48. The average of two of these numbers is 56. What is the third number?",
+"answer": "32",
+"explanation": "the total of three numbers must be 48 × 3 = 144. The total of two numbers must be 56 × 2 = 112. Therefore, 144 – 112 = 32",
+"options": [
+"27",
+"45",
+"22"
+]
+},
+{
+"id": "T7-24",
+"chapter": "Test Seven",
+"question": "71, 81, 74, 77, 77, 73, 80, 69, ? What number should replace the question mark?",
+"answer": "83",
+"explanation": "there are two alternate sequences: +3 and –4",
+"options": [
+"72.5",
+"81",
+"65"
+]
+},
+{
+"id": "T7-29",
+"chapter": "Test Seven",
+"question": "A I L N T E I E V D Move from star to star along connecting lines to spell out a 10-letter word. All letters are used once each only.",
+"answer": "EVIDENTIAL",
+"explanation": "",
+"options": [
+"PANORAMIC",
+"DISAPPEAR",
+"SKYSCR(APE)R"
+]
+},
+{
+"id": "T7-33",
+"chapter": "Test Seven",
+"question": "In 13 years time the combined ages of my three brothers will be 94. What will it be in nine years time?",
+"answer": "82",
+"explanation": "combined age in 9 years time will be 94 – (3 × (13 – 9))",
+"options": [
+"81",
+"83",
+"72.5"
+]
+},
+{
+"id": "T8-1",
+"chapter": "Test Eight",
+"question": "0, 1, 3, 6, 7, 9, 12, 13, 15, 18, ?, ?, ? What numbers should replace the question marks?",
+"answer": "19, 21, 24",
+"explanation": "the sequence progresses +1, +2, +3 repeated",
+"options": [
+"27, 9, 12",
+"week, day, year",
+"badger, monkey, rabbit"
+]
+},
+{
+"id": "T8-2",
+"chapter": "Test Eight",
+"question": "Find two words that differ only by the omission of a single letter (for example, place/pace), in answer to the following clue: bowl-shaped cavity/provide food",
+"answer": "crater/cater",
+"explanation": "",
+"options": [
+"chaste/chased",
+"Ban(glad)esh",
+"generalities"
+]
+},
+{
+"id": "T8-6",
+"chapter": "Test Eight",
+"question": "Complete the following to create a palindromic phrase, ie one that reads the same forwards and backwards, such as Madam I’m Adam. *U**L* ***P ** Clue: scholarly errors!",
+"answer": "PUPILS SLIP UP",
+"explanation": "",
+"options": [
+"PULL TO PIECES",
+"FRAME OF MIND",
+"ON CLOUD NINE"
+]
+},
+{
+"id": "T8-9",
+"chapter": "Test Eight",
+"question": "Which is the odd one out? sow, bull, buck, boar, stallion",
+"answer": "sow",
+"explanation": "it is a female animal, the rest are male",
+"options": [
+"bull",
+"buck",
+"boar"
+]
+},
+{
+"id": "T8-10",
+"chapter": "Test Eight",
+"question": "The ages of five family members total 107 between them. The ages of Margaret and Stuart total 29 between them. The ages of Stuart and Jeffrey total 44 between them. The ages of Jeffrey and Brian total 57 between them. The ages of Brian and Philip total 46 between them. How old is each family member?",
+"answer": "Margaret 17, Stuart 12, Jeffrey 32, Brian 25 and Philip 21",
+"explanation": "",
+"options": [
+"Each word has three letters in succession in the alphabet",
+"The fathers’ rights activist’s dog buried its bone in the garden",
+"Two letters can be placed at the beginning to make a new word"
+]
+},
+{
+"id": "T8-17",
+"chapter": "Test Eight",
+"question": "closed is to shut as open is to: obscure, visible, field, overt, wide",
+"answer": "overt",
+"explanation": "",
+"options": [
+"tyro",
+"Billy",
+"silver"
+]
+},
+{
+"id": "T8-18",
+"chapter": "Test Eight",
+"question": "Harry is one and a third as old as Larry and Larry is one and a third as old as Carrie. Together their ages total 74. How old are Larry, Harry and Carrie?",
+"answer": "Harry 32, Larry 24, Carrie 18",
+"explanation": "",
+"options": [
+"Tony 42, Cherie 38, Gordon 56",
+"Jill 30, Peter 40, Kate 50",
+"SPINACH, CARROT, POTATO"
+]
+},
+{
+"id": "T8-19",
+"chapter": "Test Eight",
+"question": "Which two words are closest in meaning? salubrious, healthy, identical, conspicuous, devout, bleak",
+"answer": "salubrious, healthy",
+"explanation": "",
+"options": [
+"practicable, feasible",
+"boycott, proscribe",
+"medley, conglomeration"
+]
+},
+{
+"id": "T8-28",
+"chapter": "Test Eight",
+"question": "1, 2.25, 3.75, 5.5, 7.5, 9.75, ? What number should replace the question mark?",
+"answer": "12.25",
+"explanation": "add 1.25, 1.5, 1.75, 2, 2.25, 2.5",
+"options": [
+"11",
+"20",
+"9"
+]
+},
+{
+"id": "T8-31",
+"chapter": "Test Eight",
+"question": "How many minutes is it before midnight if 32 minutes ago it was three times as many minutes past 22.00?",
+"answer": "22 minutes",
+"explanation": "Midnight less 22 minutes = 11.38. Less 32 minutes = 11.06. 10 pm (22.00) plus 66 minutes (22 × 3) = 11.06",
+"options": [
+"44 minutes",
+"41 minutes",
+"37 minutes"
+]
+},
+{
+"id": "T8-34",
+"chapter": "Test Eight",
+"question": "1, 31, 59, 85, 109, ? What number should replace the question mark?",
+"answer": "131",
+"explanation": "add 30, 28, 26, 24, 22; 35. The large circle moves 45° clockwise and alternates white/black. The centre dot alternates black/white",
+"options": [
+"92.2",
+"83",
+"81"
+]
+},
+{
+"id": "T8-39",
+"chapter": "Test Eight",
+"question": "Three coins are tossed in the air and two of the coins land with heads face upwards. What are the chances on the next toss of the coins that at least two of the coins will land with heads face upwards again?",
+"answer": "50 per cent",
+"explanation": "it is a certainty that at least two coins will land with the same side face up. It is equally likely that these two coins will land heads up as they will land tails upwards. It is immaterial what occurred in the previous toss",
+"options": [
+"2 kilograms",
+"22 minutes",
+"44 minutes"
+]
+},
+{
+"id": "T9-11",
+"chapter": "Test Nine",
+"question": "RASCAL MARE is an anagram of which two words that are similar in meaning?",
+"answer": "SCARE, ALARM",
+"explanation": "",
+"options": [
+"SCENT, AROMA",
+"FREE, LIBERATE",
+"ripe, mellow"
+]
+},
+{
+"id": "T9-12",
+"chapter": "Test Nine",
+"question": "gallery is to balcony as stalls is to: proscenium, stage, audience, footlights, pit",
+"answer": "pit",
+"explanation": "",
+"options": [
+"fry",
+"eat",
+"tree"
+]
+},
+{
+"id": "T9-13",
+"chapter": "Test Nine",
+"question": "3182596 is to 65283 and 6742835 is to 53476 therefore 7496258 is to ?",
+"answer": "85647",
+"explanation": "reverse the first number and discard the highest and lowest digits",
+"options": [
+"11615",
+"8612",
+"941319"
+]
+},
+{
+"id": "T9-16",
+"chapter": "Test Nine",
+"question": "0, 27, 54, ?, 108, 135 What number should replace the question mark?",
+"answer": "81",
+"explanation": "add 27 each time",
+"options": [
+"83",
+"72.5",
+"86"
+]
+},
+{
+"id": "T9-17",
+"chapter": "Test Nine",
+"question": "Which is the odd one out? bolero, calypso, waltz, salsa, polka",
+"answer": "calypso",
+"explanation": "it is a song, the rest are dances",
+"options": [
+"bolero",
+"waltz",
+"salsa"
+]
+},
+{
+"id": "T9-19",
+"chapter": "Test Nine",
+"question": "I met four of my old school friends today. In the morning I first saw Patricia and later bumped into Richie. Then in the afternoon I saw Christabel. Who did I encounter in the evening? Was it Thora, Stella, Thelma or Sally?",
+"answer": "Stella",
+"explanation": "each name begins with the middle two letters of the previous name",
+"options": [
+"calypso",
+"titanic",
+"beauty"
+]
+},
+{
+"id": "T9-25",
+"chapter": "Test Nine",
+"question": "Using all of the letters in the phrase TOUCH VOLCANO PIECE once each only spell out the names of three types of fruit.",
+"answer": "PEACH, OLIVE, COCONUT",
+"explanation": "",
+"options": [
+"SPINACH, CARROT, POTATO",
+"reduce, cereal, allure",
+"badger, monkey, rabbit"
+]
+},
+{
+"id": "T9-35",
+"chapter": "Test Nine",
+"question": "Which is the odd word out? orders, murder, derelict, underworld, detonator",
+"answer": "detonator",
+"explanation": "the rest contain the letters ‘der’ adjacently",
+"options": [
+"intrinsic",
+"alleviate",
+"calypso"
+]
+},
+{
+"id": "T9-36",
+"chapter": "Test Nine",
+"question": "Stuart and Christine share out a certain sum of money in the ratio 4:5 and Christine ends up with £24.00. How much money was shared in the first place?",
+"answer": "£43.20",
+"explanation": "Christine = £24 or five parts, therefore, each part = £4.80. Total of nine parts shared = £4.80 × 9 = £43.20",
+"options": [
+"£900",
+"£384",
+"TA101"
+]
+},
+{
+"id": "T9-37",
+"chapter": "Test Nine",
+"question": "Referring again to question 36, how much money would have been shared out if the ratio had been 5:4 instead of 4:5?",
+"answer": "£54.00",
+"explanation": "Christine’s share = £24.00 or four parts, therefore, each part = £6.00. Total of nine parts shared = £54.00",
+"options": [
+"£43.20",
+"51/16",
+"TA101"
+]
+},
+{
+"id": "T10-3",
+"chapter": "Test Ten",
+"question": "100, 99.5, 98.5, 97, 95, 92.5, 89.5, ? What number should replace the question mark?",
+"answer": "86",
+"explanation": "the amount deducted increases by 0.5 each time, ie 0.5, 1, 1.5, 2, 2.5, 3, 3.5",
+"options": [
+"81",
+"83",
+"65"
+]
+},
+{
+"id": "T10-6",
+"chapter": "Test Ten",
+"question": "Which is the odd one out? diploid, deltoid, dual, binary, twofold",
+"answer": "deltoid",
+"explanation": "it means triangular in shape. The rest mean double or twofold",
+"options": [
+"diploid",
+"dual",
+"binary"
+]
+},
+{
+"id": "T10-7",
+"chapter": "Test Ten",
+"question": "5 10 9 4 7 4 5 8 3 2 5 6 1 8 9 ? What number should replace the question mark?",
+"answer": "2",
+"explanation": "in rows and columns alternate digits total the same, for example 5 + 9 = 10 + 4",
+"options": [
+"4",
+"9",
+"1"
+]
+},
+{
+"id": "T10-8",
+"chapter": "Test Ten",
+"question": "Insert a pair of letters into each bracket so that they finish the word on the left and start the word on the right. The correct letters read downwards in pairs must spell out an eight-letter word. SO (**) LT LA (**) ST DO (**) AL EP (**) ON",
+"answer": "METEORIC",
+"explanation": "to give some/melt, late/test, door/oral, epic/icon",
+"options": [
+"STAMPEDE",
+"GIGANTIC",
+"ALKALI"
+]
+},
+{
+"id": "T10-10",
+"chapter": "Test Ten",
+"question": "Which one of the following is grammatically correct? The father’s rights activist’s dog buried its bone in the garden. The fathers’ rights activist’s dog buried it’s bone in the garden. The father’s rights activist’s dog buried it’s bone in the garden. The fathers’ rights’ activist’s dog buried its bone in the garden. The fathers’ rights activists’ dog buried it’s bone in the garden. The fathers’ rights activist’s dog buried its bone in the garden. The father’s rights activists’ dog buried its bone in the garden.",
+"answer": "The fathers’ rights activist’s dog buried its bone in the garden",
+"explanation": "",
+"options": [
+"Two letters can be placed at the beginning to make a new word",
+"Each word has three letters in succession in the alphabet",
+"All work and no play means you make money hand over fist"
+]
+},
+{
+"id": "T10-11",
+"chapter": "Test Ten",
+"question": "Which number is the odd one out? 6394, 9416, 5278, 6231, 9614, 6132, 7895, 5872, 7598",
+"answer": "6394",
+"explanation": "all the others are in pairs where the second and fourth digits change places: 5278/5872, 9416/9614, 7895/7598, 6231/6132",
+"options": [
+"9416",
+"5278",
+"6231"
+]
+},
+{
+"id": "T10-13",
+"chapter": "Test Ten",
+"question": "Which word in brackets is closest in meaning to the word in capitals? SPARTAN (scarce, austere, erratic, limited, fierce)",
+"answer": "austere",
+"explanation": "",
+"options": [
+"scarce",
+"erratic",
+"limited"
+]
+},
+{
+"id": "T10-15",
+"chapter": "Test Ten",
+"question": "7964325 is to 6975234 and 5822139 is to 2859312 therefore 7469851 is to ?",
+"answer": "6471589",
+"explanation": "reverse the first three digits, then the last four digits",
+"options": [
+"941319",
+"971613",
+"85647"
+]
+},
+{
+"id": "T10-17",
+"chapter": "Test Ten",
+"question": "caster is to chair as rowel is to: wheel, spur, bicycle, pulley, gyroscope",
+"answer": "spur; 18. 4 2 1 5 6 3 Alternatively as above but with 1 and 3 reversed",
+"explanation": "",
+"options": [
+"27 37 6 3 6 18 9 × × = × = = 74 9 17 2 17 34 17",
+"14 77 1 7 7 × = × = 55 56 5 4 20",
+"two sides to every story; 8"
+]
+},
+{
+"id": "T10-19",
+"chapter": "Test Ten",
+"question": "What four-letter word can be placed in the bracket to form a word when tacked onto the end of blue and another word when placed in front of owed? BLUE (****) OWED",
+"answer": "BELL",
+"explanation": "BLUEBELL, BELLOWED",
+"options": [
+"FRONT",
+"IRON",
+"PART"
+]
+},
+{
+"id": "T10-22",
+"chapter": "Test Ten",
+"question": "Which two words are closest in meaning? lonely, haughty, crafty, credulous, careful, arrogant",
+"answer": "haughty, arrogant",
+"explanation": "",
+"options": [
+"flippancy, levity",
+"waspish, peppery",
+"boycott, proscribe"
+]
+},
+{
+"id": "T10-24",
+"chapter": "Test Ten",
+"question": "Using all of the letters in the phrase A CATASTROPHIC PROTON only once each spell out the names of three types of vegetable.",
+"answer": "SPINACH, CARROT, POTATO",
+"explanation": "",
+"options": [
+"PEACH, OLIVE, COCONUT",
+"reduce, cereal, allure",
+"badger, monkey, rabbit"
+]
+},
+{
+"id": "T10-29",
+"chapter": "Test Ten",
+"question": "9, 16, 13, 13, 17, 10, 21, 7, ? What number should replace the question mark?",
+"answer": "25",
+"explanation": "there are two alternate sequences: +4 and –3",
+"options": [
+"27",
+"20",
+"47"
+]
+},
+{
+"id": "T10-31",
+"chapter": "Test Ten",
+"question": "AFFIRM DEMON is an anagram of which phrase (5, 2, 4)? Clue: inclination.",
+"answer": "FRAME OF MIND",
+"explanation": "",
+"options": [
+"PULL TO PIECES",
+"GET A MOVE ON",
+"ON CLOUD NINE"
+]
+},
+{
+"id": "T10-35",
+"chapter": "Test Ten",
+"question": "POLLUTE SPICE is an anagram of which phrase (4, 2, 6)? Clue: demolish.",
+"answer": "PULL TO PIECES",
+"explanation": "",
+"options": [
+"FRAME OF MIND",
+"ON CLOUD NINE",
+"GET A MOVE ON"
+]
+},
+{
+"id": "T10-38",
+"chapter": "Test Ten",
+"question": "A greengrocer received a boxful of tomatoes and on opening the box found that several had gone bad. He then counted them up so that he could make a formal complaint and found that 68 were mouldy, which was 16 per cent of the total contents of the box. How many tomatoes were in the box?",
+"answer": "425",
+"explanation": "(68 ÷ 16) × 100",
+"options": [
+"600",
+"586",
+"730"
+]
+},
+{
+"id": "T11-4",
+"chapter": "Test Eleven",
+"question": "How many minutes is it before 12 noon if 16 minutes ago it was three times as many minutes after 9 am?",
+"answer": "41 minutes",
+"explanation": "",
+"options": [
+"44 minutes",
+"22 minutes",
+"50 minutes"
+]
+},
+{
+"id": "T11-6",
+"chapter": "Test Eleven",
+"question": "Which is the odd one out? vixen, vulpine, reynard, lupine, brush",
+"answer": "lupine",
+"explanation": "it is a word meaning wolf-like. The remaining words are all connected with foxes",
+"options": [
+"vixen",
+"vulpine",
+"reynard"
+]
+},
+{
+"id": "T11-7",
+"chapter": "Test Eleven",
+"question": "Which word can be placed in the brackets that has the same meaning as the words either side of the brackets? ARMADA ( – – – – – ) SWIFT",
+"answer": "FLEET",
+"explanation": "",
+"options": [
+"HAMPER",
+"FRONT",
+"CHINA"
+]
+},
+{
+"id": "T11-10",
+"chapter": "Test Eleven",
+"question": "Beaufort is to wind as Munsell is to: music, colour, minerals, weight, intelligence",
+"answer": "colour",
+"explanation": "Beaufort is a scale of wind, Munsell is a scale of colours",
+"options": [
+"kidney",
+"circle",
+"lupine"
+]
+},
+{
+"id": "T11-11",
+"chapter": "Test Eleven",
+"question": "Solve the cryptic clue. The answer is a nine-letter word anagram within the clue: wise bands deteriorate into lasciviousnes",
+"answer": "bawdiness (wise bands)",
+"explanation": "",
+"options": [
+"the Arctic = architect",
+"sexed Utah = exhausted",
+"bridge; the others are"
+]
+},
+{
+"id": "T11-15",
+"chapter": "Test Eleven",
+"question": "Find a word that when tacked onto the end of the first word produces another word or phrase and when placed in front of the second word produces another word or phrase. BONE ( – – – – – ) TOWN",
+"answer": "CHINA",
+"explanation": "",
+"options": [
+"FALL",
+"CROOK",
+"FLEET"
+]
+},
+{
+"id": "T11-16",
+"chapter": "Test Eleven",
+"question": "What number comes next in this sequence? 1, 3, 11, 47, ?",
+"answer": "239",
+"explanation": "1 × 2 + 1 = 3; 3 × 3 + 2 = 11; 11 × 4 + 3 = 47; 47 × 5 + 4 = 239",
+"options": [
+"248",
+"72.5",
+"131"
+]
+},
+{
+"id": "T11-18",
+"chapter": "Test Eleven",
+"question": "Change one letter only in each word to produce a familiar phrase. go hit us",
+"answer": "to hot up",
+"explanation": "",
+"options": [
+"man to man",
+"come to life",
+"tit for tat"
+]
+},
+{
+"id": "T11-19",
+"chapter": "Test Eleven",
+"question": "What number comes next in this sequence? 100, 97.25, 91.75, 83.5, ?",
+"answer": "72.5",
+"explanation": "the amount deducted increases by 2.75 each time, ie 2.75, 5.5, 8.25, 11",
+"options": [
+"80",
+"83",
+"65"
+]
+},
+{
+"id": "T11-25",
+"chapter": "Test Eleven",
+"question": "Which is the odd one out? frisk, gambol, frolic, romp, lope",
+"answer": "lope",
+"explanation": "",
+"options": [
+"frisk",
+"gambol",
+"frolic"
+]
+},
+{
+"id": "T11-27",
+"chapter": "Test Eleven",
+"question": "A train travelling at a speed of 50 mph enters a tunnel that is 1.75 miles long. The length of the train is 3/8 miles. How long does it take for all the train to pass through the tunnel, from the moment the front enters to the moment the rear emerges?",
+"answer": "2 minutes 33 seconds (2.55 minutes)",
+"explanation": "At 50 mph the train takes 2.125 × 60 ÷ 50 to pass through the tunnel, ie 2.55 minutes",
+"options": [
+"105 kg; 250 × 0.7 × 0.8 × 0.75",
+"40 minutes, or 11.20 am",
+"1792 steps (896 × 2)"
+]
+},
+{
+"id": "T11-29",
+"chapter": "Test Eleven",
+"question": "dormitory is to sleep as refectory is to: study, eat, meet, pray, speak",
+"answer": "eat",
+"explanation": "",
+"options": [
+"fry",
+"ear",
+"rear"
+]
+},
+{
+"id": "T11-37",
+"chapter": "Test Eleven",
+"question": "What is the meaning of adumbrate?",
+"answer": "b. to obscure",
+"explanation": "",
+"options": [
+"a. come forward;",
+"b. to obscure;",
+"c. flattery;"
+]
+},
+{
+"id": "T12-2",
+"chapter": "Test Twelve",
+"question": "MEAN ACTORS is an anagram of which two words that are similar in meaning?",
+"answer": "SCENT, AROMA",
+"explanation": "",
+"options": [
+"SCARE, ALARM",
+"FREE, LIBERATE",
+"cabal, junta"
+]
+},
+{
+"id": "T12-4",
+"chapter": "Test Twelve",
+"question": "A man jogs at 6 mph over a certain journey and walks back over the same journey at 3 mph. What is his average speed for the journey?",
+"answer": "4 mph",
+"explanation": "Say the journey is six miles each way. Then at 6 mph the outward jog would take one hour and the inward walk two hours. This means he takes three hours to travel 12 miles or one hour to travel four miles",
+"options": [
+"30 mph",
+"9 pm",
+"8 kg"
+]
+},
+{
+"id": "T12-6",
+"chapter": "Test Twelve",
+"question": "Which word can be placed in the brackets that has the same meaning as the definitions either side of the brackets? IMPEDE ( – – – – – – ) LARGE BASKET",
+"answer": "HAMPER",
+"explanation": "",
+"options": [
+"FLEET",
+"PART",
+"FRONT"
+]
+},
+{
+"id": "T12-7",
+"chapter": "Test Twelve",
+"question": "If a car had increased its average speed for a 210-mile journey by 5 mph, the journey would have been completed in one hour less. What was the original speed of the car for the journey?",
+"answer": "30 mph",
+"explanation": "",
+"options": [
+"4 mph",
+"48 mph",
+"40 days"
+]
+},
+{
+"id": "T12-9",
+"chapter": "Test Twelve",
+"question": "Which is the odd one out? mollify, mitigate, indurate, macerate, temper",
+"answer": "indurate",
+"explanation": "this is a word meaning harden, the other words mean soften",
+"options": [
+"mollify",
+"mitigate",
+"macerate"
+]
+},
+{
+"id": "T12-10",
+"chapter": "Test Twelve",
+"question": "Solve the cryptic clue. The answer is a 13-letter word anagram within the clue: reword a keen phrase as in classic theatrical tradition",
+"answer": "Shakespearean (a keen phrase as)",
+"explanation": "",
+"options": [
+"consternation (tennis cartoon)",
+"A cluttered desk a man of genius",
+"intricately (tiny article)"
+]
+},
+{
+"id": "T12-14",
+"chapter": "Test Twelve",
+"question": "passé is to outmoded as obsolete is to: stale, superseded, antediluvian, vintage, timeworn",
+"answer": "superseded",
+"explanation": "",
+"options": [
+"breastbone",
+"intricate",
+"February"
+]
+},
+{
+"id": "T12-16",
+"chapter": "Test Twelve",
+"question": "At 12 noon my watch was correct. However, it then started to lose 18 minutes per hour. Four hours ago it stopped completely and is now showing the time as 15.30. What is the correct time?",
+"answer": "9 pm",
+"explanation": "",
+"options": [
+"10 pm",
+"4 mph",
+"8 kg"
+]
+},
+{
+"id": "T12-19",
+"chapter": "Test Twelve",
+"question": "What continues the following sequence? 1, 2.65, 4.3, 5.95, 7.6, ?",
+"answer": "9.25",
+"explanation": "add 1.65 each time",
+"options": [
+"9",
+"7.5",
+"11"
+]
+},
+{
+"id": "T12-23",
+"chapter": "Test Twelve",
+"question": "Solve the cryptic clue. The answer is a 13-letter word anagram within the clue: redraw tennis cartoon with trepidation",
+"answer": "consternation (tennis cartoon)",
+"explanation": "",
+"options": [
+"Shakespearean (a keen phrase as)",
+"intricately (tiny article)",
+"bawdiness (wise bands)"
+]
+},
+{
+"id": "T12-24",
+"chapter": "Test Twelve",
+"question": "What number should replace the question mark? 42 15 14 56 35 8 36 ? 4",
+"answer": "45",
+"explanation": "36 ÷ 4 × 5; similarly 56 ÷ 8 × 5 = 35 and 42 ÷ 14 × 5 = 15",
+"options": [
+"47",
+"65",
+"57"
+]
+},
+{
+"id": "T12-26",
+"chapter": "Test Twelve",
+"question": "Which word in brackets is closest in meaning to the word in capitals? FINESSE (cessation, cleverness, showiness, excellence, opening)",
+"answer": "cleverness",
+"explanation": "",
+"options": [
+"cessation",
+"showiness",
+"excellence"
+]
+},
+{
+"id": "T12-27",
+"chapter": "Test Twelve",
+"question": "Find a word that when tacked onto the end of the first word produces another word or phrase and when placed in front of the second word produces another word or phrase. FREE ( – – – – ) APART",
+"answer": "FALL",
+"explanation": "",
+"options": [
+"CHINA",
+"CROOK",
+"WIND"
+]
+},
+{
+"id": "T12-30",
+"chapter": "Test Twelve",
+"question": "Change one letter only in each word to produce a familiar phrase: dear if bear put",
+"answer": "year in year out",
+"explanation": "",
+"options": [
+"to fight shy of",
+"be all and end all",
+"go like hot cakes"
+]
+},
+{
+"id": "T12-33",
+"chapter": "Test Twelve",
+"question": "Which is the odd one out? fedora, sabot, tarboosh, biretta, cloche",
+"answer": "sabot",
+"explanation": "it is a shoe, the rest are hats",
+"options": [
+"fedora",
+"tarboosh",
+"biretta"
+]
+},
+{
+"id": "T12-34",
+"chapter": "Test Twelve",
+"question": "Place a three-letter word in the brackets that has the same meaning as the definitions either side of the brackets. a demand for payment ( – – – ) a brownish-grey colour",
+"answer": "dun",
+"explanation": "",
+"options": [
+"long",
+"end",
+"past"
+]
+},
+{
+"id": "T12-37",
+"chapter": "Test Twelve",
+"question": "palmate is to hand as auriculate is to: nose, face, ear, smell, heel",
+"answer": "ear",
+"explanation": "",
+"options": [
+"fry",
+"silk",
+"pit"
+]
+},
+{
+"id": "T13-3",
+"chapter": "Test Thirteen",
+"question": "Solve the cryptic clue. The answer is an 11-letter word anagram within the clue: inspect tiny article puzzlingly",
+"answer": "intricately (tiny article)",
+"explanation": "",
+"options": [
+"consternation (tennis cartoon)",
+"Shakespearean (a keen phrase as)",
+"bawdiness (wise bands)"
+]
+},
+{
+"id": "T13-4",
+"chapter": "Test Thirteen",
+"question": "What number should replace the question mark? 78214 : 292 38421 : 459 69517 : ?",
+"answer": "586",
+"explanation": "69 + 517 = 586",
+"options": [
+"730",
+"1212",
+"600"
+]
+},
+{
+"id": "T13-6",
+"chapter": "Test Thirteen",
+"question": "emancipate is to slavery as liberate is to: domination, burden, duty, responsibility, captivity",
+"answer": "captivity",
+"explanation": "",
+"options": [
+"pressure",
+"highland",
+"February"
+]
+},
+{
+"id": "T13-7",
+"chapter": "Test Thirteen",
+"question": "Insert two letters into each set of brackets so that they finish the word on the left and start the word on the right. The four pairs of letters inserted when read downards in pairs will spell out an eight-letter word. MA (**) AR TE (**) ID PI (**) RT TI (**) AL",
+"answer": "STAMPEDE",
+"explanation": "to give MAST/STAR, TEAM/AMID, PIPE/PERT and TIDE/DEAL",
+"options": [
+"METEORIC",
+"IJKON",
+"GIGANTIC"
+]
+},
+{
+"id": "T13-8",
+"chapter": "Test Thirteen",
+"question": "Midway through his round a golfer hits a magnificent 210-yard drive, which brings his average length per drive for the round up to now from 156 to 162 yards. How far would he have had to hit the drive to bring his average length of drive up from 156 to 165 yards?",
+"answer": "237 yards",
+"explanation": "eight holes average 156 = 1,248 yards, nine holes average 162 = 1,458 yards (+ 210), nine holes average 165 = 1,485 yards (+ 237)",
+"options": [
+"2 kilograms",
+"40 days",
+"50 per cent"
+]
+},
+{
+"id": "T13-10",
+"chapter": "Test Thirteen",
+"question": "Which is the odd one out? segment, aggregate, ensemble, compliment, plenitude",
+"answer": "segment",
+"explanation": "it is a part, the rest are whole",
+"options": [
+"aggregate",
+"ensemble",
+"compliment"
+]
+},
+{
+"id": "T13-11",
+"chapter": "Test Thirteen",
+"question": "Which two rhyming words mean smash garden tool?",
+"answer": "break, rake",
+"explanation": "",
+"options": [
+"SCENT, AROMA",
+"chord, cord",
+"cabal, junta"
+]
+},
+{
+"id": "T13-12",
+"chapter": "Test Thirteen",
+"question": "Tom and Harry share a certain sum of money in the ratio 3 : 5. If Harry has £240, how much money is shared?",
+"answer": "£384",
+"explanation": "Harry’s share is £240, ie each part is £48 (£240 ÷ 5). Therefore, the original amount was £48 × 8 (parts) (3 + 5) = £384",
+"options": [
+"£900",
+"£43.20",
+"51/16"
+]
+},
+{
+"id": "T13-14",
+"chapter": "Test Thirteen",
+"question": "Which of the following is not an anagram of a job or profession? rein gene lee crock can chime mean lass no treaty",
+"answer": "lee crock = cockerel",
+"explanation": "The jobs/professions are: engineer = rein gene, mechanic = can chime, salesman = mean lass and attorney = no treaty",
+"options": [
+"the Arctic = architect",
+"tiny magical alarm",
+"WIN BOAR = rainbow"
+]
+},
+{
+"id": "T13-17",
+"chapter": "Test Thirteen",
+"question": "Seven synonyms of the keyword TREMENDOUS are listed. Take one letter in turn from each of the seven synonyms to spell out a further synonym of the keyword. great, terrific, monstrous, vast, enormous, gigantic, colossal",
+"answer": "titanic",
+"explanation": "",
+"options": [
+"adroit",
+"segment",
+"calypso"
+]
+},
+{
+"id": "T13-18",
+"chapter": "Test Thirteen",
+"question": "Which set of letters is the odd one out? LMNQP EFGJI RSTWV IJKON OPQTS",
+"answer": "IJKON",
+"explanation": "the rest are in the sequence three consecutive letters of the alphabet, then miss a letter, then reverse the next two",
+"options": [
+"JLM",
+"BUTTER",
+"FLEET"
+]
+},
+{
+"id": "T13-22",
+"chapter": "Test Thirteen",
+"question": "Which two words are closest in meaning? functional, vestigial, rudimentary, proficient, disappointing, savage",
+"answer": "vestigial, rudimentary",
+"explanation": "",
+"options": [
+"medley, conglomeration",
+"practicable, feasible",
+"salubrious, healthy"
+]
+},
+{
+"id": "T13-24",
+"chapter": "Test Thirteen",
+"question": "What number should replace the question mark? 3 8 6 36 7 4 2 14 6 8 4 48 9 6 2 ?",
+"answer": "27",
+"explanation": "halve the second and third numbers then multiply the first three numbers in each line to produce the fourth number, so 9 × 3 ( 6 ÷ 2 ) × 1 ( 2 ÷ 2 ) = 27",
+"options": [
+"25",
+"20",
+"47"
+]
+},
+{
+"id": "T13-25",
+"chapter": "Test Thirteen",
+"question": "Change one letter only in each word to produce a familiar phrase. so might say on",
+"answer": "to fight shy of",
+"explanation": "",
+"options": [
+"year in year out",
+"come to life",
+"go like hot cakes"
+]
+},
+{
+"id": "T13-30",
+"chapter": "Test Thirteen",
+"question": "Solve the anagram in brackets (12-letter word) to complete the quotation by Alfred North Whitehead. We think in (agile entries); we live in detail.",
+"answer": "generalities",
+"explanation": "",
+"options": [
+"government",
+"contribution",
+"sheldrake"
+]
+},
+{
+"id": "T13-31",
+"chapter": "Test Thirteen",
+"question": "Insert the numbers 1–6 inclusive in the circles so that: the sum of the numbers 4 and 5 and all the numbers in between = 19; the sum of the numbers 6 and 3 and all the numbers in between = 10; the sum of the numbers 2 and 1 and all the numbers in between = 11; the sum of the numbers 4 and 3 and all the numbers in between = 14.",
+"answer": "4 6 1 3 5 2 or 2 5 3 1 6 4",
+"explanation": "",
+"options": [
+"two sides to every story; 8",
+"14 77 1 7 7 × = × = 55 56 5 4 20",
+"652 = 162 + 632"
+]
+},
+{
+"id": "T13-33",
+"chapter": "Test Thirteen",
+"question": "Which is the odd one out? devise, contemplate, contrive, design, concoct",
+"answer": "contemplate",
+"explanation": "",
+"options": [
+"devise",
+"contrive",
+"design"
+]
+},
+{
+"id": "T13-37",
+"chapter": "Test Thirteen",
+"question": "expert is to maven as novice is to: votary, sibling, tyro, boffin, scholar",
+"answer": "tyro",
+"explanation": "",
+"options": [
+"sword",
+"clog",
+"glass"
+]
+},
+{
+"id": "T13-38",
+"chapter": "Test Thirteen",
+"question": "What is the longest word that can be produced from the following 10 letters? MUERVHANYL",
+"answer": "HUMANELY",
+"explanation": "",
+"options": [
+"EASTBOUND",
+"HAMPER",
+"IJKON"
+]
+},
+{
+"id": "T14-2",
+"chapter": "Test Fourteen",
+"question": "Add one letter, not necessarily the same letter, to the beginning, middle or end of each of these words to form two other words that are similar in meaning. tip aunt",
+"answer": "trip, jaunt",
+"explanation": "",
+"options": [
+"cabal, junta",
+"ear, brain",
+"second, last"
+]
+},
+{
+"id": "T14-3",
+"chapter": "Test Fourteen",
+"question": "What letter comes next? A D H K O ?",
+"answer": "R",
+"explanation": "skip two letters then three, ie AbcDefgHijKlmnOpqR",
+"options": [
+"HA",
+"IRON",
+"ALKALI"
+]
+},
+{
+"id": "T14-7",
+"chapter": "Test Fourteen",
+"question": "surmise is to conjecture as axiom is to: custom, idea, concept, caprice, premise",
+"answer": "premise",
+"explanation": "",
+"options": [
+"pillory",
+"beauty",
+"breastbone"
+]
+},
+{
+"id": "T14-10",
+"chapter": "Test Fourteen",
+"question": "Which is the odd one out? lampoon, pillory, spoof, burlesque, skit",
+"answer": "pillory",
+"explanation": "",
+"options": [
+"lampoon",
+"spoof",
+"burlesque"
+]
+},
+{
+"id": "T14-11",
+"chapter": "Test Fourteen",
+"question": "Which two rhyming words mean the same as DELIGHTFUL OFFERING?",
+"answer": "pleasant present",
+"explanation": "",
+"options": [
+"selling dwelling",
+"forest florist",
+"conducted tour"
+]
+},
+{
+"id": "T14-12",
+"chapter": "Test Fourteen",
+"question": "What number should replace the question mark? 3925 : 277 4697 : 2416 6257 : ?",
+"answer": "1212",
+"explanation": "6 × 2 = 12, 5 + 7 = 12. Similarly 4 × 6 = 24 and 9 + 7 = 16 (2416)",
+"options": [
+"730",
+"586",
+"683"
+]
+},
+{
+"id": "T14-17",
+"chapter": "Test Fourteen",
+"question": "NICE OLD NOUN is an anagram of which familiar phrase (two, five, four letters). Clue: the height of bliss?",
+"answer": "ON CLOUD NINE",
+"explanation": "",
+"options": [
+"PULL TO PIECES",
+"FRAME OF MIND",
+"GET A MOVE ON"
+]
+},
+{
+"id": "T14-18",
+"chapter": "Test Fourteen",
+"question": "Kate has a quarter as many again as Peter and Peter has a third as many again as Jill. Altogether they have 120. How many has each?",
+"answer": "Jill 30, Peter 40, Kate 50",
+"explanation": "",
+"options": [
+"Alf 144, Jim 36, Sid 12",
+"Harry 32, Larry 24, Carrie 18",
+"SPINACH, CARROT, POTATO"
+]
+},
+{
+"id": "T14-28",
+"chapter": "Test Fourteen",
+"question": "How many minutes is it before 12 noon if 90 minutes ago it was twice as many minutes past 8 am?",
+"answer": "50 minutes",
+"explanation": "",
+"options": [
+"22 minutes",
+"41 minutes",
+"44 minutes"
+]
+},
+{
+"id": "T14-30",
+"chapter": "Test Fourteen",
+"question": "Which is the odd one out? drapes, realtor, fanlight, diaper, tuxedo",
+"answer": "fanlight",
+"explanation": "it is a British-English term, the rest are American-English terms",
+"options": [
+"drapes",
+"realtor",
+"diaper"
+]
+},
+{
+"id": "T14-34",
+"chapter": "Test Fourteen",
+"question": "patella is to kneecap as sternum is to: collarbone, jawbone, thighbone, breastbone, shoulder-blade.",
+"answer": "breastbone",
+"explanation": "",
+"options": [
+"superseded",
+"captivity",
+"intricate"
+]
+},
+{
+"id": "T14-36",
+"chapter": "Test Fourteen",
+"question": "If Tony’s age + Cherie’s age = 80 and Tony’s age + Gordon’s age = 98 and Cherie’s age + Gordon’s age = 94, how old are Tony, Cherie and Gordon?",
+"answer": "Tony 42, Cherie 38, Gordon 56",
+"explanation": "",
+"options": [
+"Jill 30, Peter 40, Kate 50",
+"Harry 32, Larry 24, Carrie 18",
+"Alf 144, Jim 36, Sid 12"
+]
+},
+{
+"id": "T14-39",
+"chapter": "Test Fourteen",
+"question": "Out of 100 women surveyed leaving Harrods, 83 had a white bag, 77 had black shoes, 62 carried an umbrella and 95 wore a ring. What is the minimum number of women who must have had all four items?",
+"answer": "17",
+"explanation": "add the number of items together, which gives 83 + 77 + 62 + 95 = 317 among 100 women. This gives three items to each and four items to 17 of these women. The least number of women to have all three items is, therefore, 17",
+"options": [
+"25",
+"20",
+"22"
+]
+},
+{
+"id": "T15-2",
+"chapter": "Test Fifteen",
+"question": "female is to nanny as male is to: Joey, Tommy, Harry, Billy, Larry",
+"answer": "Billy",
+"explanation": "",
+"options": [
+"sword",
+"overt",
+"tree"
+]
+},
+{
+"id": "T15-3",
+"chapter": "Test Fifteen",
+"question": "Change one letter only in each word to produce a familiar phrase. tin fog cat",
+"answer": "tit for tat",
+"explanation": "",
+"options": [
+"man to man",
+"act your age",
+"come to life"
+]
+},
+{
+"id": "T15-6",
+"chapter": "Test Fifteen",
+"question": "Which is the odd one out? calypso, concerto, aria, shanty, madrigal",
+"answer": "concerto",
+"explanation": "it is music written for instruments, the rest being songs, typically with words",
+"options": [
+"calypso",
+"aria",
+"shanty"
+]
+},
+{
+"id": "T15-7",
+"chapter": "Test Fifteen",
+"question": "Insert a word in the brackets that has the same meanings as the definitions either side of the brackets. ascend ( – – – – –) calibration",
+"answer": "scale",
+"explanation": "",
+"options": [
+"scarab",
+"long",
+"cold"
+]
+},
+{
+"id": "T15-8",
+"chapter": "Test Fifteen",
+"question": "I picked a basket full of apples from my orchard. By the time I arrived home, I had given away 75 per cent to my son, 0.625 of the remainder to my son’s neighbour and then eaten one of the remainder. I arrived home with just two apples. How many apples did I originally pick from my orchard?",
+"answer": "32",
+"explanation": "(32 less 75 per cent = 8, less 0.625 = 3, less 1 = 2)",
+"options": [
+"25",
+"27",
+"17"
+]
+},
+{
+"id": "T15-11",
+"chapter": "Test Fifteen",
+"question": "Solve the anagram in brackets (11 letters) to complete the quotation by Frank Crane. Your soul (ironic button) to the sum of things is yourself.",
+"answer": "contribution",
+"explanation": "",
+"options": [
+"generalities",
+"government",
+"crater/cater"
+]
+},
+{
+"id": "T15-17",
+"chapter": "Test Fifteen",
+"question": "Place a word in the bracket that creates another word or phrase when tacked onto the end of the first word, and creates another word or phrase when placed in front of the second word. stone ( – – – – ) feet",
+"answer": "cold",
+"explanation": "",
+"options": [
+"past",
+"long",
+"dun"
+]
+},
+{
+"id": "T15-19",
+"chapter": "Test Fifteen",
+"question": "Which two words are closest in meaning? coquetry, flippancy, apathy, adaptability, levity, celerity",
+"answer": "flippancy, levity",
+"explanation": "",
+"options": [
+"haughty, arrogant",
+"boycott, proscribe",
+"waspish, peppery"
+]
+},
+{
+"id": "T15-22",
+"chapter": "Test Fifteen",
+"question": "Change one letter only in each word to produce a familiar phrase. may do fan",
+"answer": "man to man",
+"explanation": "",
+"options": [
+"tit for tat",
+"to hot up",
+"act your age"
+]
+},
+{
+"id": "T15-23",
+"chapter": "Test Fifteen",
+"question": "exigent is to exacting as convoluted is to: esoteric, onerous, elusive, strenuous, intricate",
+"answer": "intricate",
+"explanation": "",
+"options": [
+"pressure",
+"February",
+"concerto"
+]
+},
+{
+"id": "T15-26",
+"chapter": "Test Fifteen",
+"question": "Which is the odd one out? optimize, retrograde, ameliorate, regenerate, enhance",
+"answer": "retrograde",
+"explanation": "it means to worsen, the rest being to improve",
+"options": [
+"optimize",
+"ameliorate",
+"regenerate"
+]
+},
+{
+"id": "T15-27",
+"chapter": "Test Fifteen",
+"question": "What number continues the sequence? 25, 50, 27, 46, 31, 38, 39, ?",
+"answer": "22",
+"explanation": "there are two alternate sequences, the first increases by 2, 4, 8 etc and the second decreases by 4, 8, 16 etc",
+"options": [
+"25",
+"20",
+"27"
+]
+},
+{
+"id": "T15-28",
+"chapter": "Test Fifteen",
+"question": "Insert a word in the brackets that means the same as the definitions either side of the brackets. protracted ( – – – – ) desire",
+"answer": "long",
+"explanation": "",
+"options": [
+"past",
+"cold",
+"scale"
+]
+},
+{
+"id": "T15-31",
+"chapter": "Test Fifteen",
+"question": "What is the longest English word that can be produced from the following 10 letters? NURDESBOTA",
+"answer": "EASTBOUND",
+"explanation": "",
+"options": [
+"HUMANELY",
+"PARAGRAPHS",
+"FLEET"
+]
+},
+{
+"id": "T15-32",
+"chapter": "Test Fifteen",
+"question": "Which word in brackets is closest in meaning to the word in capitals? RAMIFICATION (uproar, regulation, collision, consequence, stronghold)",
+"answer": "consequence",
+"explanation": "",
+"options": [
+"uproar",
+"regulation",
+"collision"
+]
+},
+{
+"id": "T15-35",
+"chapter": "Test Fifteen",
+"question": "Place a word in the bracket that creates another word or phrase when tacked onto the end of the first word, and creates another word or phrase when placed in front of the second word. march ( – – – – ) master",
+"answer": "past",
+"explanation": "",
+"options": [
+"cold",
+"long",
+"dun"
+]
+},
+{
+"id": "T15-38",
+"chapter": "Test Fifteen",
+"question": "UNMARKED SEATS is an anagram of which familiar phrase (four, two, seven letters)? Clue: sharp",
+"answer": "keen as mustard",
+"explanation": "",
+"options": [
+"BE TASK = basket",
+"tiny magical alarm",
+"NO SLAM = salmon"
+]
+},
+{
+"id": "T16-1",
+"chapter": "Test Sixteen",
+"question": "Which word in brackets is closest in meaning to the word in capitals? IRREFUTABLE (lost, sure, wise, secure, optimal)",
+"answer": "sure",
+"explanation": "",
+"options": [
+"lost",
+"wise",
+"secure"
+]
+},
+{
+"id": "T16-5",
+"chapter": "Test Sixteen",
+"question": "Which is the odd one out? transcend, cascade, plummet, subside, prolapse",
+"answer": "transcend",
+"explanation": "all the other words relate to fall. Transcend is a word relating to rise",
+"options": [
+"cascade",
+"plummet",
+"subside"
+]
+},
+{
+"id": "T16-7",
+"chapter": "Test Sixteen",
+"question": "Only one of the following groups of five letters can be arranged to form an English five-letter word. Can you find the word? MURDC BEWAP UNREL YIGEN THABL",
+"answer": "YIGEN = eying",
+"explanation": "",
+"options": [
+"NFOLE = felon",
+"at the ready",
+"act your age"
+]
+},
+{
+"id": "T16-10",
+"chapter": "Test Sixteen",
+"question": "auri- is to gold as argent- is to: brass, steel, emerald, silver, aluminium",
+"answer": "silver",
+"explanation": "",
+"options": [
+"colour",
+"kidney",
+"rear"
+]
+},
+{
+"id": "T16-19",
+"chapter": "Test Sixteen",
+"question": "Which word when inserted in the brackets will complete the first word and start the second? IMP (_ _ _) EAR",
+"answer": "end",
+"explanation": "to give impend and endear",
+"options": [
+"Yoga",
+"sure",
+"dun"
+]
+},
+{
+"id": "T16-20",
+"chapter": "Test Sixteen",
+"question": "Harbour is to shelter as nurture is to: shield, rear, secure, pamper, immunize",
+"answer": "rear",
+"explanation": "",
+"options": [
+"tree",
+"clog",
+"silk"
+]
+},
+{
+"id": "T16-21",
+"chapter": "Test Sixteen",
+"question": "What is the meaning of fastigate?",
+"answer": "d. like a pyramid",
+"explanation": "",
+"options": [
+"a. doubled",
+"b. slippery",
+"c. closed"
+]
+},
+{
+"id": "T16-22",
+"chapter": "Test Sixteen",
+"question": "Place two three-letter bits together to make a six-letter word. ING ETS LOW LIN DAF SWA MER NER ROB ODI Clue: bird.",
+"answer": "merlin",
+"explanation": "",
+"options": [
+"plaice",
+"beetle",
+"dahlia"
+]
+},
+{
+"id": "T16-24",
+"chapter": "Test Sixteen",
+"question": "What four-letter word is missing in this list? palm mast tory ____ ante earn nose",
+"answer": "Yoga",
+"explanation": "the first letter of each word is the same as the last letter of the preceding word",
+"options": [
+"sure",
+"end",
+"leaf"
+]
+},
+{
+"id": "T16-31",
+"chapter": "Test Sixteen",
+"question": "Place two four-letter bits together to make an eight-letter word. PEDI BURT GIGA FRAI ETIK NTIC PHON LING CUBB LICY",
+"answer": "GIGANTIC",
+"explanation": "",
+"options": [
+"MACARONI",
+"METEORIC",
+"STAMPEDE"
+]
+},
+{
+"id": "T16-36",
+"chapter": "Test Sixteen",
+"question": "Replace the vowels to form a word: CRPC",
+"answer": "carapace",
+"explanation": "",
+"options": [
+"sheldrake",
+"platform",
+"hilltops"
+]
+},
+{
+"id": "T16-37",
+"chapter": "Test Sixteen",
+"question": "What is an orris?",
+"answer": "c. flower",
+"explanation": "",
+"options": [
+"a. pepper",
+"b. horse",
+"d. architrave"
+]
+},
+{
+"id": "T16-38",
+"chapter": "Test Sixteen",
+"question": "Insert a word in the brackets that means the same as the words outside the brackets. GEM (_ _ _ _ _ _) DUNG BEETLE",
+"answer": "scarab",
+"explanation": "",
+"options": [
+"long",
+"scale",
+"sure"
+]
+},
+{
+"id": "T17-2",
+"chapter": "Test Seventeen",
+"question": "If meat in a river (3 in 6) is T(ham)es, find a word meaning contented in a country (4 in 10).",
+"answer": "Ban(glad)esh",
+"explanation": "",
+"options": [
+"ch(ape)l",
+"generalities",
+"contribution"
+]
+},
+{
+"id": "T17-3",
+"chapter": "Test Seventeen",
+"question": "Which two words are most alike in meaning? boycott, litigate, proscribe, sanction, postulate, intend",
+"answer": "boycott, proscribe",
+"explanation": "",
+"options": [
+"hearsay, rumour",
+"waspish, peppery",
+"salubrious, healthy"
+]
+},
+{
+"id": "T17-5",
+"chapter": "Test Seventeen",
+"question": "‘How many steps to the top of the Eiffel Tower?’ asked the tourist. ‘896 steps plus half the number of steps,’ replied the gendarme. How many steps are there to the top of the Eiffel Tower?",
+"answer": "1792 steps (896 × 2)",
+"explanation": "",
+"options": [
+"425136 or 631524",
+"40 minutes, or 11.20 am",
+"21534 or 43512"
+]
+},
+{
+"id": "T17-6",
+"chapter": "Test Seventeen",
+"question": "Complete the three words so that the last two letters of the first word are the first two letters of the second word, the last two letters of the second word are the first two letters of the third word, and the last two letters of the third word are the first two letters of the first word, thus completing the circle: __MP__ __MI__ _ _ G A_ _",
+"answer": "temper, ermine, negate",
+"explanation": "",
+"options": [
+"reduce, cereal, allure",
+"badger, monkey, rabbit",
+"PEACH, OLIVE, COCONUT"
+]
+},
+{
+"id": "T17-7",
+"chapter": "Test Seventeen",
+"question": "Which two words that sound alike but are spelt differently mean pure/hunted?",
+"answer": "chaste/chased",
+"explanation": "",
+"options": [
+"might/mite",
+"soul/sole",
+"rues/ruse"
+]
+},
+{
+"id": "T17-9",
+"chapter": "Test Seventeen",
+"question": "Which is the odd one out? artful, astute, shifty, devious, guileful",
+"answer": "astute",
+"explanation": "",
+"options": [
+"artful",
+"shifty",
+"devious"
+]
+},
+{
+"id": "T17-13",
+"chapter": "Test Seventeen",
+"question": "Martinmas is to November as Candlemas is to: January, February, March, October, December",
+"answer": "February",
+"explanation": "",
+"options": [
+"captivity",
+"intricate",
+"pressure"
+]
+},
+{
+"id": "T17-14",
+"chapter": "Test Seventeen",
+"question": "A well-known phrase has been divided into groups of three letters that have then been placed in the wrong order. Find the phrase. EST HON OBI LTW ONE RDS WIT KIL",
+"answer": "kill two birds with one stone",
+"explanation": "",
+"options": [
+"like a cat on a hot tin roof",
+"take the bull by the horns",
+"consternation (tennis cartoon)"
+]
+},
+{
+"id": "T17-21",
+"chapter": "Test Seventeen",
+"question": "What is a lateen?",
+"answer": "c. a sail",
+"explanation": "",
+"options": [
+"a. a musical instrument",
+"b. a bishop’s hat",
+"d. a bird"
+]
+},
+{
+"id": "T17-28",
+"chapter": "Test Seventeen",
+"question": "Which of the following is always associated with entrecote?",
+"answer": "d. steak",
+"explanation": "",
+"options": [
+"a. eels",
+"b. cream",
+"c. rice"
+]
+},
+{
+"id": "T17-29",
+"chapter": "Test Seventeen",
+"question": "All the vowels have been removed from this trite saying, ‘Sukhomlinov’s Law’. THMST BRLLN TLYDR SSDRM YWLLS LLYLS",
+"answer": "The most brilliantly dressed army will usually lose",
+"explanation": "",
+"options": [
+"Each word has three letters in succession in the alphabet",
+"All work and no play means you make money hand over fist",
+"Trust everybody but always cut the cards"
+]
+},
+{
+"id": "T17-30",
+"chapter": "Test Seventeen",
+"question": "What do all of these words have in common? calmness undefended firstly sighing disturb",
+"answer": "Each word has three letters in succession in the alphabet",
+"explanation": "",
+"options": [
+"Two letters can be placed at the beginning to make a new word",
+"The most brilliantly dressed army will usually lose",
+"All work and no play means you make money hand over fist"
+]
+},
+{
+"id": "T17-31",
+"chapter": "Test Seventeen",
+"question": "What five-letter word can be placed in front of each of these words to make new words? _ _ _ _ _ BIRD _ _ _ _ _ CLUB _ _ _ _ _ FALL _ _ _ _ _ JAR _ _ _ _ _ SCHOOL",
+"answer": "night",
+"explanation": "",
+"options": [
+"hard",
+"leaf",
+"Yoga"
+]
+},
+{
+"id": "T17-36",
+"chapter": "Test Seventeen",
+"question": "Find a one-word anagram for PETES LAD.",
+"answer": "pedestal",
+"explanation": "",
+"options": [
+"platform",
+"shortage",
+"hilltops"
+]
+},
+{
+"id": "T17-37",
+"chapter": "Test Seventeen",
+"question": "Place two three-letter bits together to make a six-letter word. ICE MER RIN SAR SAL WHA PLA DIN LER MAN Clue: fish",
+"answer": "plaice",
+"explanation": "",
+"options": [
+"dahlia",
+"merlin",
+"badger"
+]
+},
+{
+"id": "T17-38",
+"chapter": "Test Seventeen",
+"question": "Which of the following is not a boat?",
+"answer": "a. brougham",
+"explanation": "",
+"options": [
+"b. frigate",
+"c. barque",
+"d. cutter"
+]
+},
+{
+"id": "T17-40",
+"chapter": "Test Seventeen",
+"question": "Fill in the blanks to find an eight-letter word. _A_R_D_N",
+"answer": "harridan",
+"explanation": "",
+"options": [
+"February",
+"pentagon",
+"skeleton"
+]
+},
+{
+"id": "T18-3",
+"chapter": "Test Eighteen",
+"question": "Which of the following is not an anagram of a type of dog? LOOPED NO SLAM BAG EEL SAIL UK BASTES",
+"answer": "NO SLAM = salmon",
+"explanation": "The dogs are: looped = poodle; bag eel = beagle; sail UK = saluki; and bastes = basset",
+"options": [
+"BE TASK = basket",
+"WIN BOAR = rainbow",
+"tiny magical alarm"
+]
+},
+{
+"id": "T18-4",
+"chapter": "Test Eighteen",
+"question": "Consider the following list of words: mountain, wine, spoon, tennis Now choose just one of the following words which has something specific in common with them: Saturday, friendship, manners, hope, chant",
+"answer": "manners",
+"explanation": "all words can be prefixed with table",
+"options": [
+"segment",
+"titanic",
+"adroit"
+]
+},
+{
+"id": "T18-8",
+"chapter": "Test Eighteen",
+"question": "Change one letter only from each word to form a well-known phrase. ail sands of neck",
+"answer": "all hands on deck",
+"explanation": "",
+"options": [
+"go like hot cakes",
+"be all and end all",
+"year in year out"
+]
+},
+{
+"id": "T18-10",
+"chapter": "Test Eighteen",
+"question": "What three-letter word can be placed after each of the following to form five English words? F___ H___ P___ CH _ _ _ FL _ _ _",
+"answer": "air, to give fair, hair, pair, chair and flair",
+"explanation": "",
+"options": [
+"Mary 16, George 17, Alice 24, Stephen 56, Claire 71",
+"SEEK, SEED, FEED, FEND, FIND",
+"27 37 6 3 6 18 9 × × = × = = 74 9 17 2 17 34 17"
+]
+},
+{
+"id": "T18-15",
+"chapter": "Test Eighteen",
+"question": "Insert the missing letters to find two words that form a phrase: TODCODRCNTE – – ____U____ – Clue: harmonic excursion",
+"answer": "conducted tour",
+"explanation": "",
+"options": [
+"identical twins",
+"forest florist",
+"RUBLEO (rouble)"
+]
+},
+{
+"id": "T18-16",
+"chapter": "Test Eighteen",
+"question": "Which two words are most alike in meaning? discipline, schism, blister, snatch, rift, signal",
+"answer": "schism, rift",
+"explanation": "",
+"options": [
+"bilk, swindle",
+"hearsay, rumour",
+"ripe, mellow"
+]
+},
+{
+"id": "T18-19",
+"chapter": "Test Eighteen",
+"question": "Mule is to slipper as sabot is to: shoe, boot, moccasin, sandal, clog",
+"answer": "clog",
+"explanation": "",
+"options": [
+"rear",
+"tyro",
+"pit"
+]
+},
+{
+"id": "T18-20",
+"chapter": "Test Eighteen",
+"question": "Which is the odd one out? quick, curt, rapid, swift, fleet",
+"answer": "curt",
+"explanation": "",
+"options": [
+"quick",
+"rapid",
+"swift"
+]
+},
+{
+"id": "T18-21",
+"chapter": "Test Eighteen",
+"question": "What is the meaning of mantua?",
+"answer": "c. gown",
+"explanation": "",
+"options": [
+"a. hat",
+"b. animal",
+"d. insect"
+]
+},
+{
+"id": "T18-22",
+"chapter": "Test Eighteen",
+"question": "What is the next number in this series? 1/ 2/ 8/ 5 2, 3, 9, 1 /27, ?",
+"answer": "147/81 (× 11/3)",
+"explanation": "",
+"options": [
+"652 = 162 + 632",
+"£8.00 per person",
+"Jack 10 and Jill 5"
+]
+},
+{
+"id": "T18-23",
+"chapter": "Test Eighteen",
+"question": "hedonism is to pleasure as aestheticism is to: morality, beauty, ideas, perception, reality",
+"answer": "beauty",
+"explanation": "",
+"options": [
+"quirky",
+"overt",
+"silver"
+]
+},
+{
+"id": "T18-24",
+"chapter": "Test Eighteen",
+"question": "Place two four-letter bits together to equal an eight-letter word. CONT PINE LLON BANT INUI EFFI CALA DINE TERA PAPI",
+"answer": "papillon",
+"explanation": "",
+"options": [
+"irritant",
+"trochlea",
+"plaice"
+]
+},
+{
+"id": "T18-28",
+"chapter": "Test Eighteen",
+"question": "What is a hacienda?",
+"answer": "d. a ranch",
+"explanation": "",
+"options": [
+"a. a plant",
+"b. a village",
+"c. a range of mountains"
+]
+},
+{
+"id": "T18-29",
+"chapter": "Test Eighteen",
+"question": "All of the vowels have been removed from this trite saying by Judith Cohen. See if you can replace them. WLLMT LLJRH DHDCH S",
+"answer": "William Tell Jr had headaches",
+"explanation": "",
+"options": [
+"like a cat on a hot tin roof",
+"consternation (tennis cartoon)",
+"A cluttered desk a man of genius"
+]
+},
+{
+"id": "T18-30",
+"chapter": "Test Eighteen",
+"question": "What does nescient mean?",
+"answer": "c. ignorant",
+"explanation": "",
+"options": [
+"a. agreeable",
+"b. hard of hearing",
+"d. hesitant"
+]
+},
+{
+"id": "T18-37",
+"chapter": "Test Eighteen",
+"question": "Which of the following is not a nautical term?",
+"answer": "d. (hockey)",
+"explanation": "The others are: marine, anchor, beacon, piracy",
+"options": [
+"a. RANIME",
+"b. CRANOH",
+"c. EBONAC"
+]
+},
+{
+"id": "T18-38",
+"chapter": "Test Eighteen",
+"question": "Find the number to replace the question mark. 8, 10, 9¾, 8¼, 11½, 6½, ?",
+"answer": "13¼",
+"explanation": "There are two series: +1¾ and –1¾: 8, 9¾, 11½, 13¼ and 10, 8¼, 6½",
+"options": [
+"+12",
+"51/16",
+"£54.00"
+]
+},
+{
+"id": "T18-40",
+"chapter": "Test Eighteen",
+"question": "Find the longest word in the square by moving from letter to letter in any direction, but each letter must be used only once. B X W O S I Q U R K C T E J L P V H M Y F A G D N",
+"answer": "southerly",
+"explanation": "",
+"options": [
+"grudgingly",
+"detonator",
+"sheldrake"
+]
+},
+{
+"id": "T19-2",
+"chapter": "Test Nineteen",
+"question": "Which is the odd one out? anther, flower, stigma, petal, nectar",
+"answer": "flower",
+"explanation": "this is the whole thing, the rest are parts of a flower",
+"options": [
+"anther",
+"stigma",
+"petal"
+]
+},
+{
+"id": "T19-5",
+"chapter": "Test Nineteen",
+"question": "Which two rhyming words mean: fresh hint?",
+"answer": "new clue",
+"explanation": "",
+"options": [
+"weigh hay",
+"forest florist",
+"selling dwelling"
+]
+},
+{
+"id": "T19-7",
+"chapter": "Test Nineteen",
+"question": "Which of the following is not an anagram of the word: ANAGRAMMATICALLY? MANIACALLY TAG ARM ILL MAY MAGNA CARTA CLARITY AN AMALGAM TINY MAGICAL ALARM A MAGICAL MANLY ART ARM MANLY GALACTICA MY A CARNAL MAIL TAG ARMY GALA CLAIMANT ALARMING MALAY CAT",
+"answer": "tiny magical alarm",
+"explanation": "",
+"options": [
+"WIN BOAR = rainbow",
+"BE TASK = basket",
+"NO SLAM = salmon"
+]
+},
+{
+"id": "T19-8",
+"chapter": "Test Nineteen",
+"question": "What number continues the following sequence? 759, 675, 335, 165, ?",
+"answer": "80",
+"explanation": "each number is formed by multiplying the number formed by the first two digits of the previous number by its third digit. So, 16 × 5 = 80",
+"options": [
+"72.5",
+"88",
+"86"
+]
+},
+{
+"id": "T19-13",
+"chapter": "Test Nineteen",
+"question": "Which word is the odd one out? auctioneers, executioner, postponed, erroneously, weaponless",
+"answer": "weaponless",
+"explanation": "all the other words contain the adjacent letters ONE",
+"options": [
+"auctioneers",
+"executioner",
+"postponed"
+]
+},
+{
+"id": "T19-15",
+"chapter": "Test Nineteen",
+"question": "succeed is to prevail as fail is to: contrive, agonize, destroy, founder, grovel",
+"answer": "founder",
+"explanation": "",
+"options": [
+"premise",
+"pressure",
+"kidney"
+]
+},
+{
+"id": "T19-19",
+"chapter": "Test Nineteen",
+"question": "Which two words are most alike in meaning? waspish, jovial, peppery, prudent, perilous, lewd",
+"answer": "waspish, peppery",
+"explanation": "",
+"options": [
+"hearsay, rumour",
+"boycott, proscribe",
+"haughty, arrogant"
+]
+},
+{
+"id": "T19-20",
+"chapter": "Test Nineteen",
+"question": "A car travels the first half of a motorway journey at an average speed of 40 mph, and the second half of the journey at an average speed of 60 mph. What is the average speed for the entire journey?",
+"answer": "48 mph",
+"explanation": "Say the journey takes 120 miles. The first half of the journey (60 miles) takes 60/40 = 1.5 hours; the second half takes 60/60 = 1.0 hour. So, the journey of 120 miles takes 1.5 + 1.0 = 2.5 hours and therefore, the average speed is 120/2.5 = 48 mph",
+"options": [
+"30 mph",
+"8 kg",
+"4 mph"
+]
+},
+{
+"id": "T19-22",
+"chapter": "Test Nineteen",
+"question": "Place two three-letter bits together to make a six-letter word. GER BOL EPR GER TLY BAL SHE BAD CAT TIG Clue: animal",
+"answer": "badger",
+"explanation": "",
+"options": [
+"merlin",
+"plaice",
+"dahlia"
+]
+},
+{
+"id": "T19-23",
+"chapter": "Test Nineteen",
+"question": "What is the meaning of kibble?",
+"answer": "a. iron bucket",
+"explanation": "",
+"options": [
+"b. card game",
+"c. a quarrel",
+"d. fruit"
+]
+},
+{
+"id": "T19-24",
+"chapter": "Test Nineteen",
+"question": "Which is the odd one out? midge bassoon solemn dabbled brilliant coding carpet",
+"answer": "midge, the others start with a fish",
+"explanation": "bass, sole, dab, brill, cod, carp",
+"options": [
+"vestigial, rudimentary",
+"EUCALYPTUS, SANDALWOOD",
+"medley, conglomeration"
+]
+},
+{
+"id": "T19-28",
+"chapter": "Test Nineteen",
+"question": "Which four-letter word can be placed in front of all of these words to make new words? _ _ _ _ BAKED _ _ _ _ BOILED _ _ _ _ BOARD _ _ _ _ BACK _ _ _ _ HEADED",
+"answer": "hard",
+"explanation": "",
+"options": [
+"night",
+"leaf",
+"long"
+]
+},
+{
+"id": "T19-30",
+"chapter": "Test Nineteen",
+"question": "What is a jacana?",
+"answer": "a. bird",
+"explanation": "",
+"options": [
+"b. fish",
+"c. insect",
+"d. animal"
+]
+},
+{
+"id": "T19-31",
+"chapter": "Test Nineteen",
+"question": "Which of the following is not a bird?",
+"answer": "a. tctale = cattle",
+"explanation": "The others are: canary, merlin, puffin, peewit",
+"options": [
+"a. TCTALE",
+"b. RYCANA",
+"c. NIRMEL"
+]
+},
+{
+"id": "T19-35",
+"chapter": "Test Nineteen",
+"question": "What do these words have in common? a. alone b. hold c. anger d. mask e. force",
+"answer": "Two letters can be placed at the beginning to make a new word",
+"explanation": "abalone, behold, changer, damask, enforce",
+"options": [
+"Each word has three letters in succession in the alphabet",
+"The fathers’ rights activist’s dog buried its bone in the garden",
+"All work and no play means you make money hand over fist"
+]
+},
+{
+"id": "T19-36",
+"chapter": "Test Nineteen",
+"question": "Find a one-word anagram for PAUL RICE.",
+"answer": "peculiar",
+"explanation": "",
+"options": [
+"pedestal",
+"hilltops",
+"shortage"
+]
+},
+{
+"id": "T19-37",
+"chapter": "Test Nineteen",
+"question": "Place two four-letter bits together to equal an eight-letter word. COCH, MAND, GERM, TONS, HLEA, LOCY, FRAC, TROC, ITES, IDIO",
+"answer": "trochlea",
+"explanation": "",
+"options": [
+"papillon",
+"badger",
+"irritant"
+]
+},
+{
+"id": "T19-38",
+"chapter": "Test Nineteen",
+"question": "What have these words in common? cashed helmet soaking sublime plummet",
+"answer": "They all contain the name of a tree",
+"explanation": "ash, elm, oak, lime, plum",
+"options": [
+"They all commence with a boy’s name",
+"A cluttered desk a man of genius",
+"Trust everybody but always cut the cards"
+]
+},
+{
+"id": "T19-40",
+"chapter": "Test Nineteen",
+"question": "Since my birth I have had a birthday cake with candles, one for each year of my birthday, each year. To date, I have had 325 candles. How old am I?",
+"answer": "25",
+"explanation": "",
+"options": [
+"32",
+"27",
+"17"
+]
+},
+{
+"id": "T20-1",
+"chapter": "Test Twenty",
+"question": "A statue is being carved by a sculptor. The original piece of marble weighed 250 kg. In the first week 30 per cent is cut away. In the second week 20 per cent of the remainder is cut away. In the third week the statue is completed when 25 per cent of the remainder is cut away. What is the weight of the final statue?",
+"answer": "105 kg; 250 × 0.7 × 0.8 × 0.75",
+"explanation": "",
+"options": [
+"2 minutes 33 seconds (2.55 minutes)",
+"40 minutes, or 11.20 am",
+"1792 steps (896 × 2)"
+]
+},
+{
+"id": "T20-2",
+"chapter": "Test Twenty",
+"question": "Which word in brackets is closest in meaning to the word in capitals? ESPOUSAL (advocacy, suspicion, agreement, bias, honesty)",
+"answer": "advocacy",
+"explanation": "",
+"options": [
+"suspicion",
+"agreement",
+"bias"
+]
+},
+{
+"id": "T20-3",
+"chapter": "Test Twenty",
+"question": "Which is the odd one out? relating triangle rambling integral altering",
+"answer": "rambling",
+"explanation": "the rest are all anagrams of each other",
+"options": [
+"bonanza",
+"fanlight",
+"abutment"
+]
+},
+{
+"id": "T20-5",
+"chapter": "Test Twenty",
+"question": "Which number is the odd one out? 159 248 963 357 951 852",
+"answer": "248",
+"explanation": "in the rest there is the same difference between each digit, eg 8 (–3) 5 (–3) 2",
+"options": [
+"239",
+"683",
+"157"
+]
+},
+{
+"id": "T20-6",
+"chapter": "Test Twenty",
+"question": "Sunday Monday Tuesday Wednesday Thursday Friday Saturday What day is two days before the day immediately following the day three days before the day two days after the day immediately before Friday?",
+"answer": "Tuesday",
+"explanation": "",
+"options": [
+"bonanza",
+"ruminate",
+"Chaplin"
+]
+},
+{
+"id": "T20-8",
+"chapter": "Test Twenty",
+"question": "What is the longest English word that can be created from this set of letters, using each letter once only? NUHRIAKMTE",
+"answer": "ruminate",
+"explanation": "",
+"options": [
+"filament",
+"bonanza",
+"rambling"
+]
+},
+{
+"id": "T20-11",
+"chapter": "Test Twenty",
+"question": "What four-digit number should replace the question mark? 4342 (3176) 1726 7995 (7516) 2162 8418 (????) 1725",
+"answer": "4725",
+"explanation": "delete the digits outside the brackets that appear twice, and insert the remaining digits in the brackets in the same order that they appear outside the brackets – 8418 (4725) 1725",
+"options": [
+"3649",
+"11615",
+"3645"
+]
+},
+{
+"id": "T20-12",
+"chapter": "Test Twenty",
+"question": "hypotenuse is to triangle as chord is to: polygon, cone, rhomboid, circle, heptagon",
+"answer": "circle",
+"explanation": "",
+"options": [
+"colour",
+"sword",
+"premise"
+]
+},
+{
+"id": "T20-15",
+"chapter": "Test Twenty",
+"question": "If meat in a river (3 in 6) is T(ham)es, can you find a word meaning reconstitute in the title of a Shakespeare play (6 in 7, 3, 7)?",
+"answer": "Measu(re For M)easure",
+"explanation": "",
+"options": [
+"sexed Utah = exhausted",
+"the Arctic = architect",
+"bridge; the others are"
+]
+},
+{
+"id": "T20-16",
+"chapter": "Test Twenty",
+"question": "Change one letter only from each word to form a well-known phrase. WE AIL ANY AND ILL",
+"answer": "be all and end all",
+"explanation": "",
+"options": [
+"all hands on deck",
+"go like hot cakes",
+"to fight shy of"
+]
+},
+{
+"id": "T20-21",
+"chapter": "Test Twenty",
+"question": "Place the numbers 1–5 in the circles so that: the sum of the numbers 2 and 4 and all the numbers between them total 15; the sum of the numbers 3 and 2 and all the numbers between them total 11; the sum of the numbers 5 and 4 and all the numbers between them total 12; the sum of the numbers 1 and 3 and all the numbers between them total 9.",
+"answer": "21534 or 43512",
+"explanation": "Note that the sum of the numbers 1–5 is 15. According to the first line of the question, the numbers 2 and 4 must, therefore, be in the outside circles",
+"options": [
+"425136 or 631524",
+"37 minutes",
+"50 per cent"
+]
+},
+{
+"id": "T20-22",
+"chapter": "Test Twenty",
+"question": "Which is the odd one out in this list? tackled scarlet grammar godetia stacking starving",
+"answer": "scarlet",
+"explanation": "the other words all carry an animal in reverse: elk, ram, dog, cat, rat",
+"options": [
+"bonanza",
+"segment",
+"pillory"
+]
+},
+{
+"id": "T20-24",
+"chapter": "Test Twenty",
+"question": "What is a pumpion?",
+"answer": "b. pumpkin",
+"explanation": "",
+"options": [
+"a. drink",
+"c. carriage",
+"d. type of cheese"
+]
+},
+{
+"id": "T20-31",
+"chapter": "Test Twenty",
+"question": "Which of the following is not a tree? LIOWWL CUPESR VATRAC CICAAA DODERA",
+"answer": "Vatrac (cravat)",
+"explanation": "The others are: willow, spruce, acacia, deodar",
+"options": [
+"RUBLEO (rouble)",
+"forest florist",
+"identical twins"
+]
+},
+{
+"id": "T20-33",
+"chapter": "Test Twenty",
+"question": "Place a word inside the brackets that means the same as the two words outside the brackets. SHEPHERD’S STAFF (_ _ _ _ _) ROGUE",
+"answer": "CROOK",
+"explanation": "",
+"options": [
+"WIND",
+"CHINA",
+"FLEET"
+]
+},
+{
+"id": "T20-35",
+"chapter": "Test Twenty",
+"question": "Which two words mean the same? bathos, spectacles, junta, carriage, archetype, cabal",
+"answer": "cabal, junta",
+"explanation": "",
+"options": [
+"felicity, bliss",
+"break, rake",
+"SCENT, AROMA"
+]
+},
+{
+"id": "T20-37",
+"chapter": "Test Twenty",
+"question": "Which one of these was not a president of the United States? RACRET ROOVHE PINCHAL TAMRUN SLIWNO",
+"answer": "Chaplin",
+"explanation": "The others are: Carter, Hoover, Truman, Wilson",
+"options": [
+"London",
+"bonanza",
+"segment"
+]
+},
+{
+"id": "T20-38",
+"chapter": "Test Twenty",
+"question": "Which is the odd one out? bazooka, shrapnel, claymore, harpoon, bonanza, arquebus",
+"answer": "bonanza",
+"explanation": "",
+"options": [
+"bazooka",
+"shrapnel",
+"claymore"
+]
+},
+{
+"id": "T21-3",
+"chapter": "Test Twenty-One",
+"question": "pediform is to foot as reniform is to: heart, kidney, tooth, beak, fingers",
+"answer": "kidney",
+"explanation": "",
+"options": [
+"silver",
+"quirky",
+"London"
+]
+},
+{
+"id": "T21-4",
+"chapter": "Test Twenty-One",
+"question": "Which is the odd one out? pentad, limerick, quatrain, quincunx, pentagon",
+"answer": "quatrain",
+"explanation": "it is connected with the number four, whilst the rest all have a connection with the number five",
+"options": [
+"pentad",
+"limerick",
+"quincunx"
+]
+},
+{
+"id": "T21-9",
+"chapter": "Test Twenty-One",
+"question": "Complete the names of three animals by inserting the missing letters. _A_ G _ R _O_K_Y _A_ B _ T Now rearrange the nine missing letters to find two words (6,3) in answer to the clue: greased palms.",
+"answer": "badger, monkey, rabbit",
+"explanation": "The missing letters can be arranged to spell out bribed men",
+"options": [
+"temper, ermine, negate",
+"reduce, cereal, allure",
+"SPINACH, CARROT, POTATO"
+]
+},
+{
+"id": "T21-13",
+"chapter": "Test Twenty-One",
+"question": "Which two rhyming words solve the following clue? Sylvan flower seller",
+"answer": "forest florist",
+"explanation": "",
+"options": [
+"conducted tour",
+"pleasant present",
+"identical twins"
+]
+},
+{
+"id": "T21-14",
+"chapter": "Test Twenty-One",
+"question": "Which of the following is not an anagram of a type of ship? ARK NET LAY LEG NUCHAL BETASK SPA MAN",
+"answer": "BE TASK = basket",
+"explanation": "The ships are, in order: tanker, galley, launch, sampan; 15. bundle of laughs",
+"options": [
+"tiny magical alarm",
+"NO SLAM = salmon",
+"WIN BOAR = rainbow"
+]
+},
+{
+"id": "T21-17",
+"chapter": "Test Twenty-One",
+"question": "Which two words are most alike in meaning? speech, hearsay, fury, boast, rumour, extract",
+"answer": "hearsay, rumour",
+"explanation": "",
+"options": [
+"bilk, swindle",
+"waspish, peppery",
+"boycott, proscribe"
+]
+},
+{
+"id": "T21-18",
+"chapter": "Test Twenty-One",
+"question": "Which is the odd number out? 9421, 7532, 9854, 8612, 6531, 8541",
+"answer": "8612",
+"explanation": "all the other numbers have their digits in descending order",
+"options": [
+"6957",
+"6394",
+"3649"
+]
+},
+{
+"id": "T21-20",
+"chapter": "Test Twenty-One",
+"question": "Change one letter only from each word to spell out a well-known phrase. ACE FOUR ACE",
+"answer": "act your age",
+"explanation": "",
+"options": [
+"at the ready",
+"come to life",
+"man to man"
+]
+},
+{
+"id": "T21-22",
+"chapter": "Test Twenty-One",
+"question": "Which five-letter word can be placed in front of each of these words to make new words? _ _ _ _ _ RUNNER _ _ _ _ _ AGE _ _ _ _ _ LINE _ _ _ _ _ RANK _ _ _ _ _ MAN",
+"answer": "FRONT",
+"explanation": "",
+"options": [
+"BELL",
+"FLEET",
+"HAMPER"
+]
+},
+{
+"id": "T21-24",
+"chapter": "Test Twenty-One",
+"question": "Place two three-letter bits together to equal an animal. ONE, POL, VIC, ERA, BIS, UNA",
+"answer": "vicuna",
+"explanation": "",
+"options": [
+"merlin",
+"plaice",
+"beetle"
+]
+},
+{
+"id": "T21-28",
+"chapter": "Test Twenty-One",
+"question": "Which is the odd one out? timer loots repel times spots",
+"answer": "times",
+"explanation": "the other words also make words when spelt backwards",
+"options": [
+"cube",
+"lupine",
+"scarlet"
+]
+},
+{
+"id": "T21-29",
+"chapter": "Test Twenty-One",
+"question": "Find a one-word anagram for SHOT PILL.",
+"answer": "hilltops",
+"explanation": "",
+"options": [
+"pedestal",
+"shortage",
+"peculiar"
+]
+},
+{
+"id": "T21-30",
+"chapter": "Test Twenty-One",
+"question": "What is a plié?",
+"answer": "b. a ballet movement",
+"explanation": "",
+"options": [
+"a. a climbing tool",
+"c. a pie",
+"d. a fencing stroke"
+]
+},
+{
+"id": "T21-31",
+"chapter": "Test Twenty-One",
+"question": "What are the next two letters in this sequence? A, F, H, K, N, ?, ?",
+"answer": "Y, Z",
+"explanation": "the letters are made with three straight lines",
+"options": [
+"888, 890",
+"30, 26",
+"150, 157"
+]
+},
+{
+"id": "T21-36",
+"chapter": "Test Twenty-One",
+"question": "Which of these is not an island? LICSLY NAGPEN KENROY DOLNON YANMAC",
+"answer": "London",
+"explanation": "The others are: Scilly, Penang, Orkney, Cayman",
+"options": [
+"times",
+"Chaplin",
+"impact"
+]
+},
+{
+"id": "T21-37",
+"chapter": "Test Twenty-One",
+"question": "Find a six-letter word using only these four letters: A, K, L, I.",
+"answer": "ALKALI",
+"explanation": "",
+"options": [
+"FRONT",
+"CROOK",
+"WIND"
+]
+},
+{
+"id": "T21-38",
+"chapter": "Test Twenty-One",
+"question": "Place two four-letter bits together to make an eight-letter word. RONI, DAMA, TION, RENI, POEN, PENT, AGOS, MACA, GADE, TICS",
+"answer": "MACARONI",
+"explanation": "",
+"options": [
+"GIGANTIC",
+"METEORIC",
+"FRONT"
+]
+},
+{
+"id": "T22-2",
+"chapter": "Test Twenty-Two",
+"question": "Change SEEK to FIND in three links by changing one letter at a time. SEEK ____ ____ ____ FIND",
+"answer": "SEEK, SEED, FEED, FEND, FIND",
+"explanation": "Some variations are possible and allowable",
+"options": [
+"air, to give fair, hair, pair, chair and flair",
+"Mary 16, George 17, Alice 24, Stephen 56, Claire 71",
+"A cluttered desk a man of genius"
+]
+},
+{
+"id": "T22-3",
+"chapter": "Test Twenty-Two",
+"question": "Six synonyms of the keyword SKILFUL are given. Take one letter in turn from each of these synonyms to spell out a further synonym of SKILFUL: able, adept, dextrous, proficient, accomplished, competent",
+"answer": "adroit",
+"explanation": "",
+"options": [
+"titanic",
+"Stella",
+"scarab"
+]
+},
+{
+"id": "T22-9",
+"chapter": "Test Twenty-Two",
+"question": "Which two letters come next in the following sequence? A, D, I, P, Y, CF, DI, FD, ?",
+"answer": "HA",
+"explanation": "take the numerical position of each letter in the alphabet to reveal the sequence of consecutive square numbers 1, 4, 9, 16, 25, 36, 49, 64, 81",
+"options": [
+"JLM",
+"IJKON",
+"PART"
+]
+},
+{
+"id": "T22-16",
+"chapter": "Test Twenty-Two",
+"question": "What is the meaning of plenary?",
+"answer": "d. open to all",
+"explanation": "",
+"options": [
+"a. easy to bend",
+"b. overabundance",
+"c. able to absorb"
+]
+},
+{
+"id": "T22-17",
+"chapter": "Test Twenty-Two",
+"question": "Change one letter only from each word to form a well-known phrase. TO LIVE NOT MAKES",
+"answer": "go like hot cakes",
+"explanation": "",
+"options": [
+"be all and end all",
+"all hands on deck",
+"at the ready"
+]
+},
+{
+"id": "T22-18",
+"chapter": "Test Twenty-Two",
+"question": "Which two words are most alike in meaning? accommodate, bilk, score, chat, swindle, wind",
+"answer": "bilk, swindle",
+"explanation": "",
+"options": [
+"schism, rift",
+"waspish, peppery",
+"ripe, mellow"
+]
+},
+{
+"id": "T22-21",
+"chapter": "Test Twenty-Two",
+"question": "Which of the following is not clothing?",
+"answer": "b. hassock",
+"explanation": "",
+"options": [
+"a. togue",
+"c. cassock",
+"d. chapeau"
+]
+},
+{
+"id": "T22-22",
+"chapter": "Test Twenty-Two",
+"question": "Fill in the missing vowels to find a trite saying. CLTTRD DSKMN FGNS",
+"answer": "A cluttered desk a man of genius",
+"explanation": "",
+"options": [
+"Shakespearean (a keen phrase as)",
+"William Tell Jr had headaches",
+"consternation (tennis cartoon)"
+]
+},
+{
+"id": "T22-23",
+"chapter": "Test Twenty-Two",
+"question": "What is a picot?",
+"answer": "d. loop of thread",
+"explanation": "",
+"options": [
+"a. sword fish",
+"b. jewellery",
+"c. fabric"
+]
+},
+{
+"id": "T22-28",
+"chapter": "Test Twenty-Two",
+"question": "Solve the anagram to find a one-word answer. HEED LARKS.",
+"answer": "sheldrake",
+"explanation": "",
+"options": [
+"peculiar",
+"shortage",
+"pedestal"
+]
+},
+{
+"id": "T22-29",
+"chapter": "Test Twenty-Two",
+"question": "What number should replace the question mark? AVIATOR = 6 FIXTURE = 9 WIZARDS = 1 DIVERSE = ?",
+"answer": "4",
+"explanation": "take the Roman numeral value of the second/third letters: AVIATOR; FIXTURE; WIZARDS; DIVERSE",
+"options": [
+"2",
+"9",
+"7.5"
+]
+},
+{
+"id": "T22-30",
+"chapter": "Test Twenty-Two",
+"question": "Find a six-letter word using only these four letters: L I W O.",
+"answer": "willow",
+"explanation": "",
+"options": [
+"bubble",
+"winnow",
+"shortage"
+]
+},
+{
+"id": "T22-32",
+"chapter": "Test Twenty-Two",
+"question": "Find the 10-letter word. _A_A_R_P_S",
+"answer": "PARAGRAPHS",
+"explanation": "",
+"options": [
+"PANORAMIC",
+"EVIDENTIAL",
+"EASTBOUND"
+]
+},
+{
+"id": "T22-35",
+"chapter": "Test Twenty-Two",
+"question": "What activity is langlauf?",
+"answer": "d. skiing",
+"explanation": "",
+"options": [
+"a. boating",
+"b. fishing",
+"c. skating"
+]
+},
+{
+"id": "T23-2",
+"chapter": "Test Twenty-Three",
+"question": "A bag of potatoes weighs 16 kg divided by a quarter of its weight. How much does the bag weigh?",
+"answer": "8 kg",
+"explanation": "16/2 = 8",
+"options": [
+"4 mph",
+"48 mph",
+"9 pm"
+]
+},
+{
+"id": "T23-3",
+"chapter": "Test Twenty-Three",
+"question": "Rift is to valley as mesa is to: desert, mountain, plain, hill, highland",
+"answer": "highland",
+"explanation": "",
+"options": [
+"founder",
+"intricate",
+"captivity"
+]
+},
+{
+"id": "T23-8",
+"chapter": "Test Twenty-Three",
+"question": "A well-known phrase has been divided into groups of three letters, which have then been placed in the wrong order. Find the phrase. EBU EHO ETH LLB RNS TAK YTH",
+"answer": "take the bull by the horns",
+"explanation": "",
+"options": [
+"kill two birds with one stone",
+"like a cat on a hot tin roof",
+"consternation (tennis cartoon)"
+]
+},
+{
+"id": "T23-14",
+"chapter": "Test Twenty-Three",
+"question": "Change one letter only from each word to form a well-known phrase. AS SHE READS",
+"answer": "at the ready",
+"explanation": "",
+"options": [
+"come to life",
+"act your age",
+"man to man"
+]
+},
+{
+"id": "T23-15",
+"chapter": "Test Twenty-Three",
+"question": "Solve this one-word anagram. BARGAIN OIL",
+"answer": "aboriginal",
+"explanation": "",
+"options": [
+"speculator",
+"sheldrake",
+"government"
+]
+},
+{
+"id": "T23-18",
+"chapter": "Test Twenty-Three",
+"question": "Insert the letters to find two words that form a phrase. W LN I S TAT E C N D _ _ _____I___ _ _ Clue: peas in a pod.",
+"answer": "identical twins",
+"explanation": "",
+"options": [
+"conducted tour",
+"pleasant present",
+"forest florist"
+]
+},
+{
+"id": "T23-19",
+"chapter": "Test Twenty-Three",
+"question": "If meat in a river (3 in 6) is T(ham)es, can you find a monkey in church (3 in 6)?",
+"answer": "ch(ape)l",
+"explanation": "",
+"options": [
+"Ban(glad)esh",
+"highland",
+"shortage"
+]
+},
+{
+"id": "T23-21",
+"chapter": "Test Twenty-Three",
+"question": "Place the same four-letter word in front of these words to make new words. _ _ _ _ HOPPER _ _ _ _ LET _ _ _ _ BUD _ _ _ _ LIKE _ _ _ _ AGE",
+"answer": "leaf",
+"explanation": "",
+"options": [
+"dun",
+"scale",
+"cold"
+]
+},
+{
+"id": "T23-22",
+"chapter": "Test Twenty-Three",
+"question": "Find a one-word anagram for TORE GASH.",
+"answer": "shortage",
+"explanation": "",
+"options": [
+"peculiar",
+"platform",
+"pedestal"
+]
+},
+{
+"id": "T23-28",
+"chapter": "Test Twenty-Three",
+"question": "Which is the odd one out?",
+"answer": "b. pyramid (it is a solid, the rest are polygons)",
+"explanation": "",
+"options": [
+"a. hexagon",
+"b. pyramid",
+"c. square"
+]
+},
+{
+"id": "T23-29",
+"chapter": "Test Twenty-Three",
+"question": "Place two four-letter bits together to make an eight-letter word. AMPO ALIS LURE DENT TANT GREN SELE DEVO IRRI DINE",
+"answer": "irritant",
+"explanation": "",
+"options": [
+"papillon",
+"trochlea",
+"beetle"
+]
+},
+{
+"id": "T23-30",
+"chapter": "Test Twenty-Three",
+"question": "What is a drogger?",
+"answer": "b. boat",
+"explanation": "",
+"options": [
+"a. castle",
+"c. caravan",
+"d. druggist"
+]
+},
+{
+"id": "T23-31",
+"chapter": "Test Twenty-Three",
+"question": "What is the next number in this series? –3, +6, +2, –3, +7, –12, ?",
+"answer": "+12",
+"explanation": "There are two series: +5 and –9. –3, +2, +7, +12, +6, –3, –12",
+"options": [
+"13¼",
+"51/16",
+"£384"
+]
+},
+{
+"id": "T23-35",
+"chapter": "Test Twenty-Three",
+"question": "Which of the following is always part of comfit?",
+"answer": "d. sugar",
+"explanation": "",
+"options": [
+"a. peppercorns",
+"b. bacon",
+"c. ham"
+]
+},
+{
+"id": "T23-36",
+"chapter": "Test Twenty-Three",
+"question": "Place two three-letter bits together to make a six-letter word. SPI, TLE, BUB, ANT, WOR, DAR, MIN, BEE, WAS, LER Clue: insect.",
+"answer": "beetle",
+"explanation": "",
+"options": [
+"plaice",
+"merlin",
+"vicuna"
+]
+},
+{
+"id": "T23-37",
+"chapter": "Test Twenty-Three",
+"question": "Which of these is not found in the kitchen? CUGPEG CIJRUE RAGRET DIGBRE LACSSE",
+"answer": "bridge; the others are",
+"explanation": "eggcup, juicer, grater, scales",
+"options": [
+"the Arctic = architect",
+"lee crock = cockerel",
+"sexed Utah = exhausted"
+]
+},
+{
+"id": "T23-38",
+"chapter": "Test Twenty-Three",
+"question": "Fill in the missing vowels to make a trite saying. TRSTV RYBDY BTLWY SCTTH CRDS",
+"answer": "Trust everybody but always cut the cards",
+"explanation": "",
+"options": [
+"A cluttered desk a man of genius",
+"They all contain the name of a tree",
+"Shakespearean (a keen phrase as)"
+]
+},
+{
+"id": "T24-2",
+"chapter": "Test Twenty-Four",
+"question": "Which is the odd one out? incumbent, obligatory, intrinsic, imperative, irremissible",
+"answer": "intrinsic",
+"explanation": "it is necessary because it is something that forms an essential part of a whole; the rest are necessary as a duty",
+"options": [
+"incumbent",
+"obligatory",
+"imperative"
+]
+},
+{
+"id": "T24-7",
+"chapter": "Test Twenty-Four",
+"question": "Which word in brackets is closest in meaning to the word in capitals? ERSTWHILE (notable, incorrect, near, cultured, past)",
+"answer": "past",
+"explanation": "",
+"options": [
+"notable",
+"incorrect",
+"near"
+]
+},
+{
+"id": "T24-9",
+"chapter": "Test Twenty-Four",
+"question": "Only one of the following groups of five letters can be arranged to form an English five-letter word. Can you find the word? MERDO HYOAL NFOLE HURSN MUDAP",
+"answer": "NFOLE = felon",
+"explanation": "",
+"options": [
+"YIGEN = eying",
+"at the ready",
+"NO SLAM = salmon"
+]
+},
+{
+"id": "T24-13",
+"chapter": "Test Twenty-Four",
+"question": "Insert two letters in each bracket so that they finish the word on the left and start the word on the right. The letters, when read downwards in pairs, will spell out an eight-letter word. TA(_ _)IP DU(_ _)SE DI(_ _)CH SO(_ _)LY",
+"answer": "skeleton",
+"explanation": "",
+"options": [
+"megastar",
+"soul/sole",
+"papillon"
+]
+},
+{
+"id": "T24-14",
+"chapter": "Test Twenty-Four",
+"question": "Which word is the odd one out? carried foolish scarlet quarter mansion fishing",
+"answer": "foolish",
+"explanation": "all the other words start and finish with consecutive letters of the alphabet, eg carried",
+"options": [
+"calypso",
+"deltoid",
+"flower"
+]
+},
+{
+"id": "T24-15",
+"chapter": "Test Twenty-Four",
+"question": "Solve this one-word anagram: STAR COUPLE",
+"answer": "speculator",
+"explanation": "",
+"options": [
+"aboriginal",
+"sheldrake",
+"grudgingly"
+]
+},
+{
+"id": "T24-18",
+"chapter": "Test Twenty-Four",
+"question": "Which is the odd one out? RE500 50I1000E NA5Y TA101 GO50500 B50UE",
+"answer": "TA101",
+"explanation": "substitute Roman numerals for numbers to read: red, lime, navy, gold and blue. TA101 spells TAXI (10 = X and I = 1)",
+"options": [
+"RE500",
+"50I1000E",
+"NA5Y"
+]
+},
+{
+"id": "T24-19",
+"chapter": "Test Twenty-Four",
+"question": "What number should replace the question mark? 492, 366, 189, 810, ?",
+"answer": "88",
+"explanation": "8 × 1 = 8, 8 + 0 = 8",
+"options": [
+"86",
+"83",
+"81"
+]
+},
+{
+"id": "T24-21",
+"chapter": "Test Twenty-Four",
+"question": "What is a cairn?",
+"answer": "c. a heap of stones",
+"explanation": "",
+"options": [
+"a. a loch",
+"b. a valley",
+"d. an outlook post"
+]
+},
+{
+"id": "T24-22",
+"chapter": "Test Twenty-Four",
+"question": "What have all these words in common? bartered timepiece patrician donated alfresco",
+"answer": "They all commence with a boy’s name",
+"explanation": "Bart, Tim, Pat, Don, Alf",
+"options": [
+"They all contain the name of a tree",
+"A cluttered desk a man of genius",
+"Shakespearean (a keen phrase as)"
+]
+},
+{
+"id": "T24-24",
+"chapter": "Test Twenty-Four",
+"question": "Change one letter in each word to get three words that are members of the same category. For example, foul, sax, tin = four, six, ten. weed, dab, near",
+"answer": "week, day, year",
+"explanation": "",
+"options": [
+"PEACH, OLIVE, COCONUT",
+"27, 9, 12",
+"reduce, cereal, allure"
+]
+},
+{
+"id": "T24-28",
+"chapter": "Test Twenty-Four",
+"question": "Which of the following is not a cloud?",
+"answer": "c. fumerole",
+"explanation": "",
+"options": [
+"a. cumulus",
+"b. stratus",
+"d. nimbus"
+]
+},
+{
+"id": "T24-29",
+"chapter": "Test Twenty-Four",
+"question": "Add vowels to make a trite saying. LLWRK NDNPL YMNSY MKMNY HNDVR FST",
+"answer": "All work and no play means you make money hand over fist",
+"explanation": "",
+"options": [
+"Each word has three letters in succession in the alphabet",
+"The most brilliantly dressed army will usually lose",
+"Two letters can be placed at the beginning to make a new word"
+]
+},
+{
+"id": "T24-30",
+"chapter": "Test Twenty-Four",
+"question": "Find a six-letter word using only these four letters: W O N I",
+"answer": "winnow",
+"explanation": "",
+"options": [
+"bubble",
+"willow",
+"dahlia"
+]
+},
+{
+"id": "T24-31",
+"chapter": "Test Twenty-Four",
+"question": "What is a fogle?",
+"answer": "b. silk handkerchief",
+"explanation": "",
+"options": [
+"a. musical instrument",
+"c. hat",
+"d. shoes"
+]
+},
+{
+"id": "T24-35",
+"chapter": "Test Twenty-Four",
+"question": "Which of the following is not an insect? GIAWER BASRAC SETEST RUBLEO THENOR",
+"answer": "RUBLEO (rouble)",
+"explanation": "The others are: earwig, scarab, tsetse, hornet",
+"options": [
+"Vatrac (cravat)",
+"forest florist",
+"identical twins"
+]
+},
+{
+"id": "T24-37",
+"chapter": "Test Twenty-Four",
+"question": "Place two three-letter bits together to make a six-letter word. LIA PAN FOD DAH AST SIE DAF TUL IPE ERR Clue: flower.",
+"answer": "dahlia",
+"explanation": "",
+"options": [
+"beetle",
+"plaice",
+"merlin"
+]
+},
+{
+"id": "T24-40",
+"chapter": "Test Twenty-Four",
+"question": "Find the 10-letter word. _R_D_I_G_Y",
+"answer": "grudgingly",
+"explanation": "",
+"options": [
+"weaponless",
+"southerly",
+"foolish"
+]
+},
+{
+"id": "T25-2",
+"chapter": "Test Twenty-Five",
+"question": "How many minutes is it before 12 noon if 20 minutes ago it was three times as many minutes after 9 am?",
+"answer": "40 minutes, or 11.20 am",
+"explanation": "",
+"options": [
+"1792 steps (896 × 2)",
+"44 minutes",
+"41 minutes"
+]
+},
+{
+"id": "T25-3",
+"chapter": "Test Twenty-Five",
+"question": "Which word in brackets is closest in meaning to the word in capitals? GLUTINOUS (sad, cohesive, voracious, hungry, flushed)",
+"answer": "cohesive",
+"explanation": "",
+"options": [
+"sad",
+"voracious",
+"hungry"
+]
+},
+{
+"id": "T25-6",
+"chapter": "Test Twenty-Five",
+"question": "Which is the odd one out? nylon, vicuna, acrylic, polyester, acetate",
+"answer": "vicuna",
+"explanation": "it is a natural material, the rest are man-made",
+"options": [
+"nylon",
+"acrylic",
+"polyester"
+]
+},
+{
+"id": "T25-7",
+"chapter": "Test Twenty-Five",
+"question": "Which two words that sound alike but are spelt differently, mean: essence, individual?",
+"answer": "soul/sole",
+"explanation": "",
+"options": [
+"rues/ruse",
+"might/mite",
+"chaste/chased"
+]
+},
+{
+"id": "T25-8",
+"chapter": "Test Twenty-Five",
+"question": "Which two rhyming words mean: trading residence?",
+"answer": "selling dwelling",
+"explanation": "",
+"options": [
+"pleasant present",
+"forest florist",
+"Vatrac (cravat)"
+]
+},
+{
+"id": "T25-11",
+"chapter": "Test Twenty-Five",
+"question": "A well-known phrase has been divided up into groups of three letters, which have then been placed in the wrong order. Find the phrase. ATO, EAC, INR, LIK, NAH, OOF, OTT",
+"answer": "like a cat on a hot tin roof",
+"explanation": "",
+"options": [
+"kill two birds with one stone",
+"take the bull by the horns",
+"William Tell Jr had headaches"
+]
+},
+{
+"id": "T25-14",
+"chapter": "Test Twenty-Five",
+"question": "What is the longest English word that can be produced from the following 10 letters? IFTWENPAML",
+"answer": "filament",
+"explanation": "",
+"options": [
+"ruminate",
+"cohesive",
+"trombone"
+]
+},
+{
+"id": "T25-15",
+"chapter": "Test Twenty-Five",
+"question": "Which number is the odd one out? 681422 751217 941319 831114 391221 691524 791625",
+"answer": "941319",
+"explanation": "in all the others the first two digits are added together to obtain the third and fourth digits, and the second digit is added to the third and fourth digits to obtain the fifth and sixth digits. For example, with 681422, 6 + 8 = 14 + 8 = 22",
+"options": [
+"971613",
+"6471589",
+"85647"
+]
+},
+{
+"id": "T25-17",
+"chapter": "Test Twenty-Five",
+"question": "Which set of letters is the odd one out? ADE ILM RUV EHI VYZ JLM FIJ",
+"answer": "JLM",
+"explanation": "in all the others there are two spaces in the alphabet between the first two letters and no space between the last two, eg AbcDE",
+"options": [
+"ADE",
+"ILM",
+"RUV"
+]
+},
+{
+"id": "T25-18",
+"chapter": "Test Twenty-Five",
+"question": "A B C Pythagorean numbers occur when a2 = b2 + c2, for example, 342 = 162 + 302. Find another set of whole Pythagorean numbers where b also equals 16.",
+"answer": "652 = 162 + 632",
+"explanation": "",
+"options": [
+"147/81 (× 11/3)",
+"£8.00 per person",
+"Jack 10 and Jill 5"
+]
+},
+{
+"id": "T25-19",
+"chapter": "Test Twenty-Five",
+"question": "Complete the three words so that the same two letters that finish the first word start the second, the same two letters that finish the second word start the third and the same two letters that finish the third word also start the first word, thus completing the circle. __DU__ __RE__ __LU__",
+"answer": "reduce, cereal, allure",
+"explanation": "",
+"options": [
+"temper, ermine, negate",
+"badger, monkey, rabbit",
+"SPINACH, CARROT, POTATO"
+]
+},
+{
+"id": "T25-20",
+"chapter": "Test Twenty-Five",
+"question": "Insert two letters in each bracket so that they finish the word on the left and start the word on the right. The letters, when read downwards in pairs, will spell out an eight-letter word. N A (_ _) S H S A (_ _) S P C A (_ _) E M R E (_ _) C H",
+"answer": "megastar",
+"explanation": "",
+"options": [
+"skeleton",
+"soul/sole",
+"filament"
+]
+},
+{
+"id": "T25-22",
+"chapter": "Test Twenty-Five",
+"question": "Find a one-word anagram for FLAT ROMP.",
+"answer": "platform",
+"explanation": "",
+"options": [
+"shortage",
+"peculiar",
+"pedestal"
+]
+},
+{
+"id": "T25-23",
+"chapter": "Test Twenty-Five",
+"question": "Find a six-letter word using only these four letters: L B U E.",
+"answer": "bubble",
+"explanation": "",
+"options": [
+"winnow",
+"willow",
+"platform"
+]
+},
+{
+"id": "T25-24",
+"chapter": "Test Twenty-Five",
+"question": "What is a papillon?",
+"answer": "a. dog",
+"explanation": "",
+"options": [
+"b. flower",
+"c. insect",
+"d. butterfly"
+]
+},
+{
+"id": "T25-28",
+"chapter": "Test Twenty-Five",
+"question": "Place two four-letter bits together to equal an eight-letter word. ATES, SLIM, PARE, ORIC, COMP, OMEN, INGO, METE, ORIT, SENT",
+"answer": "METEORIC",
+"explanation": "",
+"options": [
+"GIGANTIC",
+"MACARONI",
+"STAMPEDE"
+]
+},
+{
+"id": "T25-29",
+"chapter": "Test Twenty-Five",
+"question": "Place the same four-letter word in front of these words to make new words. _ _ _ _ WORK _ _ _ _ WARE _ _ _ _ ORE _ _ _ _ CLAD _ _ _ _ SMITH",
+"answer": "IRON",
+"explanation": "",
+"options": [
+"PART",
+"WIND",
+"FLEET"
+]
+},
+{
+"id": "T25-30",
+"chapter": "Test Twenty-Five",
+"question": "Which of these is not a material? HARIMO TUBRET NETEAS SKAMAD LICOCA",
+"answer": "BUTTER",
+"explanation": "The others are: mohair, sateen, damask, calico",
+"options": [
+"HARIMO",
+"TUBRET",
+"NETEAS"
+]
+},
+{
+"id": "T25-31",
+"chapter": "Test Twenty-Five",
+"question": "Solve this code to find a saying. H JMZPS UCAIV XCPRN PALCM OQZVS UCCLV XTAIN PLACQ SMAPJ LSSAM Hint: the answer is unseen, but not much chance of it being OK!",
+"answer": "It won’t work",
+"explanation": "Read the letter between the letters which follow: ie, H (i) JMZPS (t) UCAIV (w)",
+"options": [
+"at the ready",
+"act your age",
+"NFOLE = felon"
+]
+},
+{
+"id": "T25-36",
+"chapter": "Test Twenty-Five",
+"question": "Which two words mean the same? surprise, anger, felicity, benevolent, desire, bliss, delicate, stormy",
+"answer": "felicity, bliss",
+"explanation": "",
+"options": [
+"hearsay, rumour",
+"swimmer, skier",
+"cabal, junta"
+]
+},
+{
+"id": "T25-37",
+"chapter": "Test Twenty-Five",
+"question": "All of the vowels have been removed from this trite saying. This is ‘Cole’s law’. THNLY SLCDC BBG",
+"answer": "thinly sliced cabbage",
+"explanation": "",
+"options": [
+"bridge; the others are",
+"bawdiness (wise bands)",
+"William Tell Jr had headaches"
+]
+},
+{
+"id": "T25-38",
+"chapter": "Test Twenty-Five",
+"question": "What is a melange?",
+"answer": "b. mixture",
+"explanation": "",
+"options": [
+"a. card game",
+"c. caramel",
+"d. ice cream"
+]
+}
+]/*ITEMS_END*/;
+const SKIPPED = /*SKIPPED_START*/[
+[
+"Test 1 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q7",
+"answer is a figure letter, not text"
+],
+[
+"Test 1 Q8",
+"answer is a diagram"
+],
+[
+"Test 1 Q9",
+"no clear answer found in the answers section"
+],
+[
+"Test 1 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q31",
+"no clear answer found in the answers section"
+],
+[
+"Test 1 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 1 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q11",
+"answer is a diagram"
+],
+[
+"Test 2 Q12",
+"no clear answer found in the answers section"
+],
+[
+"Test 2 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q14",
+"no clear answer found in the answers section"
+],
+[
+"Test 2 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 2 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q22",
+"answer is a figure letter, not text"
+],
+[
+"Test 3 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 3 Q40",
+"no clear answer found in the answers section"
+],
+[
+"Test 4 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q8",
+"no clear answer found in the answers section"
+],
+[
+"Test 4 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q12",
+"answer is a figure letter, not text"
+],
+[
+"Test 4 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q30",
+"no clear answer found in the answers section"
+],
+[
+"Test 4 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 4 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q11",
+"answer is a figure letter, not text"
+],
+[
+"Test 5 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q20",
+"no clear answer found in the answers section"
+],
+[
+"Test 5 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 5 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q8",
+"no clear answer found in the answers section"
+],
+[
+"Test 6 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q14",
+"no clear answer found in the answers section"
+],
+[
+"Test 6 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q30",
+"no clear answer found in the answers section"
+],
+[
+"Test 6 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 6 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q8",
+"no clear answer found in the answers section"
+],
+[
+"Test 7 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q26",
+"no clear answer found in the answers section"
+],
+[
+"Test 7 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 7 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q8",
+"no clear answer found in the answers section"
+],
+[
+"Test 8 Q11",
+"answer is a diagram"
+],
+[
+"Test 8 Q12",
+"no clear answer found in the answers section"
+],
+[
+"Test 8 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q35",
+"no clear answer found in the answers section"
+],
+[
+"Test 8 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 8 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q5",
+"answer is a figure letter, not text"
+],
+[
+"Test 9 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q10",
+"no clear answer found in the answers section"
+],
+[
+"Test 9 Q14",
+"answer is a diagram"
+],
+[
+"Test 9 Q15",
+"no clear answer found in the answers section"
+],
+[
+"Test 9 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q27",
+"no clear answer found in the answers section"
+],
+[
+"Test 9 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q31",
+"no clear answer found in the answers section"
+],
+[
+"Test 9 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 9 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q9",
+"answer is a figure letter, not text"
+],
+[
+"Test 10 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q18",
+"no clear answer found in the answers section"
+],
+[
+"Test 10 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q34",
+"answer is a figure letter, not text"
+],
+[
+"Test 10 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 10 Q39",
+"answer is a diagram"
+],
+[
+"Test 10 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 11 Q39",
+"no clear answer found in the answers section"
+],
+[
+"Test 11 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q29",
+"answer is a figure letter, not text"
+],
+[
+"Test 12 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 12 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q26",
+"answer is a figure letter, not text"
+],
+[
+"Test 13 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 13 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q31",
+"answer is a figure letter, not text"
+],
+[
+"Test 14 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q38",
+"depends on a diagram or figure"
+],
+[
+"Test 14 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q14",
+"no clear answer found in the answers section"
+],
+[
+"Test 15 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q24",
+"answer is not a short statement"
+],
+[
+"Test 15 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 15 Q40",
+"answer is a figure letter, not text"
+],
+[
+"Test 16 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q9",
+"answer is not a short statement"
+],
+[
+"Test 16 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q30",
+"answer is not a short statement"
+],
+[
+"Test 16 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 16 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q1",
+"answer is not a short statement"
+],
+[
+"Test 17 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q22",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 17 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q31",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 18 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 19 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q9",
+"answer is not a short statement"
+],
+[
+"Test 20 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q18",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q28",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q29",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q30",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 20 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q1",
+"answer is a figure letter, not text"
+],
+[
+"Test 21 Q2",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q15",
+"no clear answer found in the answers section"
+],
+[
+"Test 21 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q21",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 21 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q8",
+"answer is a diagram"
+],
+[
+"Test 22 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q11",
+"answer is a figure letter, not text"
+],
+[
+"Test 22 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q14",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q15",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q19",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q31",
+"answer is a diagram"
+],
+[
+"Test 22 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q37",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q38",
+"answer is not a short statement"
+],
+[
+"Test 22 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 22 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q5",
+"no clear answer found in the answers section"
+],
+[
+"Test 23 Q6",
+"answer is a figure letter, not text"
+],
+[
+"Test 23 Q7",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q24",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 23 Q40",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q3",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q6",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q8",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q11",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q17",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q20",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q23",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q36",
+"depends on a diagram or figure"
+],
+[
+"Test 24 Q38",
+"answer is a diagram"
+],
+[
+"Test 24 Q39",
+"no clear answer found in the answers section"
+],
+[
+"Test 25 Q1",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q4",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q5",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q9",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q10",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q12",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q13",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q16",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q21",
+"answer is a figure letter, not text"
+],
+[
+"Test 25 Q25",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q26",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q27",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q32",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q33",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q34",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q35",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q39",
+"depends on a diagram or figure"
+],
+[
+"Test 25 Q40",
+"depends on a diagram or figure"
+]
+]/*SKIPPED_END*/; // [["Test 1 Q9","reason"], …] listed at the top of the page
+/* Notes shown first in the list at the top of the page (tag = "Test N Qn", matching the SKIPPED entries). */
+const VISUAL_NOTES = [
+  { tag: 'Test 1 Q1', note: 'Test One, Question 1 \u2014 which piece fits the shape on the left to form a perfect square (options A\u2013E are drawn) \u2014 excluded because it depends on a diagram' },
+  { tag: 'Test 1 Q6', note: 'Test One, Question 6 \u2014 missing section of a number grid (options A\u2013E are drawn) \u2014 excluded because it depends on a diagram' },
+  { tag: 'Test 1 Q10', note: 'Test One, Question 10 \u2014 odd one out among five figures A\u2013E \u2014 excluded because it depends on a diagram' },
+  { tag: 'Test 2 Q1', note: 'Test Two, Question 1 \u2014 "What comes next?" in a sequence of dot figures A\u2013E \u2014 excluded because it depends on a diagram' },
+  { tag: 'Test 2 Q15', note: 'Test Two, Question 15 \u2014 rhyming-pair clue \u2014 NOT excluded: the book gives a clear text answer, so it is in the quiz' }
+];
+/* ======================================================== */
+
+const KEY = 'tfquiz_missed_v1', PKEY = 'tfquiz_progress_v1', MKEY = 'tfquiz_mute_v1';
+const app = document.getElementById('app'), bar = document.getElementById('bar'), drawer = document.getElementById('drawer');
+const jget = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const idOf = i => i.id || i.chapter + '|' + i.question;
+const load = () => jget(KEY, []), save = () => jset(KEY, missed);
+let missed = load(), muted = jget(MKEY, false), AC = null, fresh = null, lastCh = null;
+const OKJ = ['Big brain energy! 🧠', 'Nailed it. Einstein is sweating.', 'Your neurons are doing a happy dance!', 'Ding ding ding! Genius mode: ON.', 'Easy... for you, apparently. 😎'];
+const NOJ = ['Oops! Even Einstein lost his keys sometimes.', 'Wrong, but your brain gets points for effort.', "Not quite. It's saved for review, no judgment. 🤷", "Whoops! That one's hiding in your Review pile.", 'Close... in a parallel universe. 🌌'];
+
+function sfx(ok) {
+  if (muted) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const n = AC.currentTime;
+    (ok ? [[523, 0], [659, .1], [784, .2]] : [[196, 0], [147, .18]]).forEach(([f, s]) => {
+      const o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? 'triangle' : 'sawtooth'; o.frequency.value = f;
+      g.gain.setValueAtTime(.001, n + s); g.gain.exponentialRampToValueAtTime(.2, n + s + .02); g.gain.exponentialRampToValueAtTime(.001, n + s + (ok ? .15 : .3));
+      o.connect(g); g.connect(AC.destination); o.start(n + s); o.stop(n + s + .32);
+    });
+  } catch (e) {}
+}
+function el(tag, props, ...kids) { const e = Object.assign(document.createElement(tag), props || {}); kids.flat().forEach(k => e.append(k)); return e; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function choicesFor(it) {
+  let w = (it.options || []).filter(Boolean);
+  if (!w.length) w = shuffle([...new Set(ITEMS.filter(x => x !== it && x.answer !== it.answer).map(x => x.answer))]).slice(0, 3);
+  const all = [it.answer, ...w];
+  return all.every(x => /^[a-e]\. /.test(x)) ? all.sort() : shuffle(all);
+}
+const mk = it => ({ it, choices: choicesFor(it), pick: null, res: null, j: 0 });
+
+const CH = [];
+ITEMS.forEach(i => { let c = CH.find(x => x.name === i.chapter); if (!c) CH.push(c = { name: i.chapter, items: [] }); c.items.push(i); });
+CH.forEach(c => { c.q = c.items.map(mk); c.i = 0; });
+const stat = c => ({ n: c.q.length, done: c.q.filter(x => x.res).length, ok: c.q.filter(x => x.res === 'ok').length });
+const overall = () => CH.reduce((t, c) => { const s = stat(c); return { n: t.n + s.n, done: t.done + s.done, ok: t.ok + s.ok }; }, { n: 0, done: 0, ok: 0 });
+let view = { k: 'home' }, rev = null, open = false;
+
+/* ---- saved progress: answers, scores, position ---- */
+function persist() {
+  const p = { a: {}, pos: {}, last: lastCh && lastCh.name };
+  CH.forEach(c => { p.pos[c.name] = c.i; c.q.forEach(x => { if (x.res) p.a[idOf(x.it)] = { p: x.pick, r: x.res, c: x.choices, j: x.j }; }); });
+  jset(PKEY, p);
+}
+function restore() {
+  const p = jget(PKEY, null); if (!p) return;
+  CH.forEach(c => {
+    if (p.pos && p.pos[c.name] <= c.q.length) c.i = p.pos[c.name] | 0;
+    c.q.forEach(x => {
+      const a = p.a && p.a[idOf(x.it)];
+      if (a && x.choices.includes(a.p)) {
+        x.pick = a.p; x.res = a.r; x.j = a.j | 0;
+        if (Array.isArray(a.c) && a.c.length === x.choices.length && a.c.every(z => x.choices.includes(z))) x.choices = a.c;
+      }
+    });
+  });
+  const c = p.last && CH.find(x => x.name === p.last); if (c) { lastCh = c; view = { k: 'ch', c }; }
+}
+function resetProgress() {
+  if (!confirm('Reset all saved progress and scores? (Your missed-questions list is kept.)')) return;
+  CH.forEach(c => { c.q = c.items.map(mk); c.i = 0; }); lastCh = null; go({ k: 'home' });
+}
+
+function go(v) { view = v; open = false; render(); window.scrollTo(0, 0); app.classList.remove('slide'); void app.offsetWidth; app.classList.add('slide'); }
+const chIdx = () => view.k === 'ch' ? CH.indexOf(view.c) : -1;
+function chapterButtons() {
+  return CH.map(c => { const s = stat(c); return el('button', { className: view.c === c ? 'cur' : '', onclick: () => go({ k: 'ch', c }) },
+    el('span', { textContent: c.name + (s.done === s.n ? ' ✅' : '') }), el('span', { className: 'mu', textContent: s.ok + '/' + s.done + ' of ' + s.n })); });
+}
+const validMissed = () => ITEMS.filter(i => missed.includes(idOf(i)));
+function render() {
+  missed = load(); if (view.k === 'ch') lastCh = view.c; persist();
+  const ci = chIdx(), o = overall();
+  document.body.style.setProperty('--h', ci >= 0 ? (ci * 47) % 360 : view.k === 'review' ? 20 : 265);
+  bar.replaceChildren(
+    el('button', { textContent: open ? '✕' : '☰ Chapters', onclick: () => { open = !open; render(); } }),
+    el('button', { textContent: '‹', 'aria-label': 'Previous chapter', disabled: ci < 1, onclick: () => go({ k: 'ch', c: CH[ci - 1] }) }),
+    el('span', { className: 't', textContent: view.k === 'ch' ? view.c.name : view.k === 'review' ? 'Review missed' : view.k === 'summary' ? 'Results' : 'IQ Quiz Quest' }),
+    el('button', { textContent: '›', 'aria-label': 'Next chapter', disabled: view.k === 'ch' ? ci >= CH.length - 1 : view.k !== 'home', onclick: () => go({ k: 'ch', c: CH[ci + 1] || CH[0] }) }),
+    el('button', { textContent: muted ? '🔇' : '🔊', 'aria-label': 'Toggle sound', onclick: () => { muted = !muted; jset(MKEY, muted); if (!muted) sfx(true); render(); } }));
+  drawer.hidden = !open;
+  drawer.replaceChildren(
+    el('button', { textContent: '🏠 Home', onclick: () => go({ k: 'home' }) }),
+    el('button', { textContent: '🔁 Review missed (' + validMissed().length + ')', onclick: startReview }),
+    el('button', { textContent: '🏆 Results', onclick: () => go({ k: 'summary' }) }),
+    ...chapterButtons());
+  if (view.k === 'home') return home(o);
+  if (view.k === 'summary') return summary(o);
+  deck(view.k === 'review' ? rev : view.c, view.k === 'review');
+}
+function skippedBox() {
+  const tags = VISUAL_NOTES.map(n => n.tag), rest = SKIPPED.filter(s => !tags.includes(s[0]));
+  return SKIPPED.length || VISUAL_NOTES.length ? el('details', {}, el('summary', { textContent: 'Skipped / excluded items (' + SKIPPED.length + ')' }),
+    el('ul', {}, VISUAL_NOTES.map(n => el('li', { style: 'font-weight:600', textContent: n.note })),
+      rest.map(s => el('li', { textContent: s[0] + ': ' + s[1] })))) : '';
+}
+function clearBtn() { return el('button', { textContent: 'Clear missed list', disabled: !missed.length, onclick: () => { if (confirm('Clear all saved missed questions?')) { missed = []; save(); render(); } } }); }
+const resetBtn = () => el('button', { textContent: 'Reset progress', onclick: resetProgress });
+function home(o) {
+  app.replaceChildren(el('h1', { textContent: '🧠 IQ Quiz Quest' }),
+    el('p', { className: 'mu', textContent: ITEMS.length + ' questions in ' + CH.length + ' chapters. Overall: ' + o.ok + '/' + o.done + ' correct so far. Progress is saved automatically.' }),
+    skippedBox(),
+    el('div', { className: 'row' }, el('button', { className: 'pri big', textContent: 'Review missed (' + validMissed().length + ')', disabled: !validMissed().length, onclick: startReview }), clearBtn(), resetBtn()),
+    el('div', { className: 'list' }, chapterButtons()));
+}
+function startReview() { rev = { name: 'Review missed', q: shuffle(validMissed()).map(mk), i: 0 }; go({ k: 'review' }); }
+function deck(d, isRev) {
+  if (!d.q.length) return app.replaceChildren(skippedBox(), el('p', { textContent: 'No missed questions saved. 🎉' }), el('button', { textContent: 'Home', onclick: () => go({ k: 'home' }) }));
+  if (d.i >= d.q.length) return done(d, isRev);
+  const q = d.q[d.i], s = stat(d), o = overall();
+  app.replaceChildren(skippedBox(),
+    el('p', { className: 'mu', textContent: d.name + ' · Question ' + (d.i + 1) + ' of ' + d.q.length + ' · Chapter score ' + s.ok + '/' + s.done + (isRev ? '' : ' · Overall ' + o.ok + '/' + o.done) }),
+    qnav(d),
+    el('div', { className: 'card' }, el('p', { textContent: q.it.question })),
+    el('div', {}, q.choices.map(c => el('button', { className: 'opt' + (q.res ? (c === q.it.answer ? ' good' : c === q.pick ? ' bad' : '') : ''), textContent: c, disabled: !!q.res, onclick: () => answer(d, c, isRev) }))),
+    q.res ? feedback(d, q) : '',
+    navRow(d));
+}
+function qnav(d) {
+  return el('div', { className: 'qn' }, d.q.map((x, i) => el('button', { className: (i === d.i ? 'cur ' : '') + (x.res === 'ok' ? 'good' : x.res === 'no' ? 'bad' : ''), textContent: i + 1, 'aria-label': 'Go to question ' + (i + 1), onclick: () => { d.i = i; render(); window.scrollTo(0, 0); } })));
+}
+function navRow(d) {
+  const q = d.q[d.i], last = d.i + 1 >= d.q.length;
+  return el('div', { className: 'row' },
+    el('button', { className: 'big', textContent: '‹ Previous', disabled: d.i < 1, onclick: () => { d.i--; render(); window.scrollTo(0, 0); } }),
+    el('button', { className: 'big' + (q.res ? ' pri' : ''), textContent: last ? 'Finish 🏁' : 'Next ›', onclick: () => { d.i++; render(); window.scrollTo(0, 0); } }));
+}
+function feedback(d, q) {
+  const ok = q.res === 'ok', J = ok ? OKJ : NOJ;
+  return el('div', { className: 'fb ' + (ok ? 'ok' : 'no') + (fresh === q ? ' fresh' : '') },
+    el('h2', { textContent: ok ? '✅ Correct!' : '❌ Oops!' }),
+    el('p', { textContent: J[(q.j | 0) % J.length] }),
+    el('p', { className: 'ans', textContent: "The book's answer: " + q.it.answer }),
+    q.it.explanation ? el('p', { className: 'mu', textContent: q.it.explanation }) : '');
+}
+function answer(d, c, isRev) {
+  const q = d.q[d.i], id = idOf(q.it), ok = c === q.it.answer; q.pick = c; q.res = ok ? 'ok' : 'no'; q.j = Math.random() * 5 | 0;
+  if (ok && isRev) missed = missed.filter(m => m !== id);
+  if (!ok && !missed.includes(id)) missed.push(id);
+  save(); fresh = q; sfx(ok); render(); fresh = null;
+}
+function trophy(o) {
+  const p = o.done ? Math.round(o.ok / o.done * 100) : 0, st = p >= 90 ? 3 : p >= 70 ? 2 : p >= 40 ? 1 : 0;
+  const rank = p >= 90 ? '🏆 Brain Wizard' : p >= 70 ? '🚀 Puzzle Pro' : p >= 50 ? '🎯 Getting Warmer' : '🌱 Warm-up Round';
+  return el('div', { className: 'card center' },
+    el('div', { className: 'stars' }, [0, 1, 2].map(i => el('span', { className: 'star', style: 'animation-delay:' + i * .2 + 's', textContent: i < st ? '★' : '☆' }))),
+    el('div', { className: 'score', textContent: o.ok + ' / ' + o.done }),
+    el('p', { className: 'ans', textContent: rank + ' · ' + p + '%' }),
+    el('p', { className: 'mu', textContent: missed.length + ' question(s) saved for review.' }));
+}
+function done(d, isRev) {
+  const ci = CH.indexOf(d);
+  app.replaceChildren(el('h1', { textContent: d.name + ' complete! 🎉' }), trophy(stat(d)), qnav(d),
+    el('div', { className: 'row' },
+      !isRev && ci < CH.length - 1 ? el('button', { className: 'pri big', textContent: 'Next chapter ›', onclick: () => go({ k: 'ch', c: CH[ci + 1] }) }) : '',
+      el('button', { className: 'big', textContent: '🏆 Results', onclick: () => go({ k: 'summary' }) })),
+    el('button', { textContent: 'Restart ' + (isRev ? 'review' : 'chapter'), onclick: () => { if (isRev) return startReview(); d.q = d.items.map(mk); d.i = 0; render(); } }));
+}
+function summary(o) {
+  app.replaceChildren(el('h1', { textContent: '🏆 Results' }), trophy(o),
+    el('p', { className: 'mu center', textContent: o.done + ' of ' + o.n + ' questions answered' }),
+    el('div', { className: 'list' }, chapterButtons()),
+    el('div', { className: 'row' }, el('button', { className: 'pri big', textContent: 'Review missed', disabled: !validMissed().length, onclick: startReview }), clearBtn(), resetBtn()));
+}
+restore(); render();
+</script></body></html>
